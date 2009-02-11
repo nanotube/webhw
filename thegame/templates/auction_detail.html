@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% load filter_extras %}
+{% load tag_extras %}
+
+{% block title %}
+Auction for Asset {{ auction.asset.name }}
+{% endblock title %}
+
+{% block bodytag %}
+<body onLoad="document.bid.bid_amount.focus()">
+{% endblock bodytag %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="/">Home</a> &rsaquo; 
+    <a href="{{ auction.asset.period.world.get_absolute_url }}">World</a> &rsaquo; 
+    <a href="{{ auction.asset.period.get_absolute_url }}">Period</a> &rsaquo; 
+    Auction
+</div>
+{% endblock breadcrumbs %}
+
+{% block content %}
+{% expr auction.asset.period.world.user_is_master(user) as user_is_master %}
+
+{% if user_is_master %}
+    <div class="change_view">
+        {% block change_view %}
+            <a href="{{auction.get_absolute_url}}master/" class="changelink">Master View</a>
+        {% endblock change_view %}
+    </div>
+{% endif %}
+
+{% if error_message %}
+<ul class="error_message">
+    <li>{{ error_message }}</li>
+</ul>
+{% endif %}
+
+{% block edit_element_form %}
+{% endblock edit_element_form %}
+
+<h2>Auction for Asset <span class="name">{{ auction.asset.name }}</span> of World <span class="name">{{ auction.asset.period.world.name }}</span></h2>
+
+<table id="auction_detail">
+    <caption>Auction Details</caption>
+    <tr>
+        {% ifequal auction.bid_set.count 0 %}
+            <th>Starting bid:</th>
+            <td>{{ auction.starting_bid|floatformat:2 }}</td>
+        {% else %}
+            <th>Current bid:</th>
+            <td>{{ auction.current_price|floatformat:2 }}</td>
+        {% endifequal %}
+    </tr>
+    <tr>
+        <th>Current high bidder:</th>
+        <td>
+            {% block bidder_display %}
+                {% ifequal auction.high_bid.bidder.id user.id %}
+                    <span class="winner">It's You!</span>
+                {% else %}
+                    <span class="loser">Not You!</span>
+                {% endifequal %}
+            {% endblock bidder_display %}
+        </td>
+    </tr>
+    <tr>
+        {% if not auction.is_ended %}
+            <th>Your maximum bid:<br>
+            <span class="note">Enter {{ auction.minimum_bid|floatformat:2 }} or more.</span></th>
+            <th>
+                <form name="bid" action="." method="post">
+                <input type="text" name="bid_amount">
+                <input type="submit" value="Place Bid">
+                </form>
+            </td>
+        {% else %}
+            <th>Final price:</th>
+            <td>
+                {% ifequal auction.bid_set.count 0 %}
+                    Not sold
+                {% else %}
+                    {{ auction.get_current_price|floatformat:2 }}
+                {% endifequal %}
+            </td>
+        {% endif %}
+    </tr>
+    {% block true_value %}
+    {% if auction.is_ended %}
+        <tr>
+            <th>Asset True Value:</th>
+            <td>{{ auction.asset.true_value|floatformat:2 }}</td>
+        </tr>
+    {% endif %}
+    {% endblock true_value %}
+    <tr>
+        {% if not auction.is_ended %}
+            <th>End time:</th>
+            <td>{{ auction.get_current_end_time|timeuntil }}<br>({{ auction.get_current_end_time }})</td>
+        {% else %}
+            <th>End time:</th>
+            <td>Auction has ended<br>({{ auction.get_current_end_time }})</td>
+        {% endif %}
+    </tr>
+    <tr>
+        <th>Current time:</th>
+        <td>{% now "Y-m-d H:i:s" %}</td>
+    </tr>
+    <tr>
+        {% if not auction.is_ended %}
+            <th>Max end time extension:</th>
+            <td>{{ auction.get_max_end_time|timeuntil }}<br>({{ auction.get_max_end_time }})</td>
+        {% else %}
+            <th>Max end time extension:</th>
+            <td>Auction has ended<br>({{ auction.get_max_end_time }})</td>
+        {% endif %}
+    </tr>
+    <tr>
+        <th>Bid history:</th>
+        <td><a href="{{ auction.get_absolute_url }}bid_history/">{{ auction.bid_set.count }} bids</a></td>
+    </tr>
+    <tr>
+        <th>Start time:</th>
+        <td>{{ auction.get_start_time }}</a></td>
+    </tr>
+        <tr>
+        <th>Starting bid:</th>
+        <td>{{ auction.starting_bid|floatformat:2 }}</a></td>
+    </tr>
+</table>
+
+<br><hr><br>
+
+<h3>Asset <span class="name">{{ auction.asset.name }}</span> Description</h3>
+<p> {% autoescape off %}{{ auction.asset.description }}{% endautoescape %} </p>
+
+<p><a href="{{ auction.asset.period.get_absolute_url }}">[back to period]</a></p>
+
+{% endblock %}

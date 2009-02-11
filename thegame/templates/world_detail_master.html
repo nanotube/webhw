@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}
+World Master
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="/">Home</a> &rsaquo; 
+    <a href="{{ world.get_absolute_url }}">World</a> &rsaquo; 
+    Master View
+</div>
+{% endblock breadcrumbs %}
+
+{% block content %}
+
+<h3 class="section">Edit attributes of world <span class="name">{{ world.name }}</span></h3>
+
+<form action="." method="POST">
+<table class="formtable">
+<caption>Edit world attributes</caption>
+{{ form.as_table }}
+
+<tr>
+    <td></td>
+    <td><input type="submit" value="Submit" /></td>
+</tr>
+</table>
+</form>
+
+<h3 class="section">Edit periods of world <span class="name">{{ world.name }}</span></h3>
+
+<table class="edit_items">
+<caption>Edit periods</caption>
+<tr><td><a href="{{ world.get_absolute_url }}addperiod/" class="addlink">Add a period</a></td><td></td></tr>
+{% for period in world.period_set.all %}
+    <tr>
+        <td>
+            <a href="{{ period.get_absolute_url }}master/" class="changelink">Period {{ period.number }}: {{ period.name }}</a>
+        </td>
+        <td>
+            <a href="{{ period.get_absolute_url }}delete/" class="deletelink">Delete</a>
+        </td>
+    </tr>
+{% endfor %}
+</table>
+
+<h3 class="section">Edit users of world <span class="name">{{ world.name }}</span></h3>
+
+<table class="edit_items">
+<caption>Edit users</caption>
+{% for membership in world.membership_set.all %}
+    <tr>
+        <td>
+            <a href="{{ membership.user.get_absolute_url }}{{ membership.user.user.id }}/master/" class="changelink">{{ membership.user.user.username }}</a>
+        </td>
+        <td>
+            {{ membership.user.description }}
+        </td>
+        <td>
+            Approval status here
+        </td>
+        <td>
+            <a href="{{ membership.user.get_absolute_url }}eject/" class="deletelink">Eject from world</a>
+        </td>
+        <td>
+            <a href="{{ membership.user.get_absolute_url }}eject/" class="yeslink">Approve world membership</a>
+        </td>
+    </tr>
+{% endfor %}
+</table>
+
+
+{% endblock %}

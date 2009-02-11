@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+Create Account
+{% endblock %}
+
+{% block bodytag %}
+<body onLoad="document.create_account.username.focus()">
+{% endblock bodytag %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="/">Home</a> &rsaquo; 
+    Create Account
+</div>
+{% endblock breadcrumbs %}
+
+{% block content %}
+
+<h3>Create your account</h3>
+
+<p>Your account will be enabled after the admin of the world you are applying to approves it.</p>
+
+<form name="create_account" action="/accounts/create_account/" method="POST">
+<table class="formtable">
+<caption>Create account</caption>
+{{ form.as_table }}
+
+<tr>
+    <td></td>
+    <td><input type="submit" value="Submit" /></td>
+</tr>
+</table>
+</form>
+
+{% endblock %}

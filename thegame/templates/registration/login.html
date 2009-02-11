@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block bodytag %}
+<body onLoad="document.login.username.focus()">
+{% endblock bodytag %}
+
+{% block content %}
+
+<p>
+    <form name="login" method="post" action=".">
+    <table class="formtable">
+    <caption>Login</caption>
+        {{ form.as_table }}
+    <tr><td>
+        <input type="submit" value="login" />
+        <input type="hidden" name="next" value="{{ next }}" />
+    </td></tr>
+    </table>
+</p>
+
+
+</form>
+<p>If you don't have an account, you can <a href="/accounts/create_account/">apply for one here</a>.
+{% endblock %}

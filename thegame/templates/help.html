@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}
+Help
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="/">Home</a> &rsaquo; 
+    Help
+</div>
+{% endblock breadcrumbs %}
+
+{% block content %}
+
+<h3>Auction mechanics</h3>
+
+<p class="text">The auction mechanism used here is similar to the classical "second-price sealed-bid auction", also known a <a href="http://en.wikipedia.org/wiki/Vickrey_auction">Vickrey auction</a>. It is also similar to the auction <a href="http://pages.ebay.com/help/buy/automatic-bidding.html">mechanism employed by eBay</a>, with the major modification of eliminating the <a href="http://en.wikipedia.org/wiki/Bid_sniping">bid sniping</a> problem.</p>
+
+<p class="text">In a "true" Vickrey auction, each bidder only places one bid, the amount of which is hidden from other bidders. Then, when all the bids are compared, the highest bidder pays not his maximum bid, but the amount of the next higest bid. So, for example, if bidder A bids $100, and bidder B bids $200, bidder B wins the auction, but only pays $100 (the amount of bidder A's bid). Thus, bidder B doesn't have to worry about "overpaying" as he would in a first-price auction (where he pays the amount of his own bid, in this case, $200, and thus would want to lower his bid from his true value so it is as close to bidder A's bid as possible). Since the goal of this game is to encourage proper asset valuation, the second-price sealed-bid mechanism is used because it makes it rational for the auction participants to bid their true value, without having to worry about the valuations being used by other players.</p>
+
+<p class="text">The exact auction mechanics used in this game are different from a true Vickrey auction (only one sealed bid), in that multiple bids are allowed over the course of the auction, that the current auction price is revealed (the second highest current bid + bid increment), and than the auction is not over until at least 5 minutes have passed without the placing of a bid. These deviations from a true second-price sealed auction are taken for the following reasons:</p>
+
+<table><tr><td>
+<ul>
+    <li>Student has the opportunity to reconsider his asset valuation and act on it. Specifically once a student is outbid, a double-check of the original asset valuation is a rational step.</li>
+    <li>As most students are familiar with eBay's auction mechanism, this reduces the startup costs.</li>
+    <li>It is more fun to be able to watch the progress of the auction, which would not be possible in a true sealed-bid auction.</li>
+    <li>The extension of auction time until no bids have been placed for some time interval effectively nullifies the "bid sniping" problem that is prevalent in eBay auctions. Thus, the student has no reason to delay the placing of the bid until the last moment, and instead the rational choice is to enter the bid in the amount of the student's calculation of the asset's true value at any point in the auction.</li>
+</ul>
+</td></tr></table>
+
+<p class="text">The easiest way to show the auction mechanics is with an example timeline. Suppose the auction "start price" is $10, the minimum bid increment is $1, and required time interval without any bids placed for the auction to end is 5 minutes.</p>
+
+<table><tr><td>
+<ul>
+    <li>Bidder A thinks the asset is worth $100, and places a bid in that amount. The auction current price becomes $10 (equal to starting price), and Bidder A is the current winning bidder.</li>
+    <li>Bidder B thinks the asset is worth $50, and places a bid in that amount. The auction price becomes $51 (50 + 1 [minimum bid increment]), and Bidder A is still the current winning bidder, as he's the only one willing to pay $51 for the asset.</li>
+    <li>Bidder A rechecks his valuation, and decides he's now willing to pay $150, and places a bid in that amount. Auction price stays at $51, and Bidder A is still the high bidder.</li>
+    <li>Bidder C thinks the asset is worth $150, and places a bid in that amount. The auction price becomes $150 (not $150 + 1, since no bidder is willing to pay $151), and Bidder A is still the current winning bidder, since he was first to place a bid of $150.</li>
+    <li>Bidder D thinks the asset is worth $200, and waits until the last few seconds before auction end to place his bid of $200. Auction price becomes $150 + 1, and Bidder D is the current high bidder. Auction end time extends by 5 minutes, giving other bidders time to respond to the bid if they so choose.</li>
+</ul>
+</td></tr></table>
+
+<p class="text">If you are curious to know more about auction theory, consider reading the excellent book <a href="http://www.nuff.ox.ac.uk/users/klemperer/VirtualBook/VirtualBookCoverSheet.asp">Auctions: Theory and Practice</a> by Paul Klemperer.</p>
+
+<h3>Returns calculation</h3>
+
+<p class="text">Period returns are calculated in a straightforward way. The "true value" of the assets of the period is accrued to your account, while the "cost" of the assets (what you paid for them as a result of the auctions) is subtracted. Thus, if you paid less than the value of the assets, you would accumulate positive returns, if you paid more, negative returns. </p>
+
+<p class="text">If you spend less than your total cash assets, it is assumed that you lend out the remaining cash at the lending rate for the period. If you spend more than your total cash assets, it is assumed that you borrow the necessary funds at the borrowing rate for the period. For now, the borrowing and lending rates are the same, and equal to the period's risk-free rate. It is thus irrelevant whether you borrow or lend, since the present value of a loan is its cash amount.</p>
+
+<p class="text">For example: let's say you started out with $100, and you bought two assets in the period:</p>
+<table><tr><td>
+<ul>
+    <li>Asset A, bought for $90, true value $100</li>
+    <li>Asset B, bought for $200, true value $210</li>
+</ul>
+</td></tr></table>
+
+<p class="text">Your end-of-period wealth is thus 100 - 90 + 100 - 200 + 210 = 120. Your return is 120/100 - 1 = 20%.</p>
+
+<h3>Further questions</h3>
+
+<p class="text">If you have any further questions, talk to your instructor.</p>
+
+{% endblock %}

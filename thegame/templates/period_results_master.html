@@ -1,0 +1,23 @@
+{% extends "period_results.html" %}
+
+{% block title %}
+Results for Period {{ period.number }} of World: {{ world.name }}
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="/">Home</a> &rsaquo; 
+    <a href="{{ period.world.get_absolute_url }}">World</a> &rsaquo; 
+    <a href="{{ period.get_absolute_url }}">Period</a> &rsaquo; 
+    <a href="{{ period.get_absolute_url }}period_results/">Period Results</a> &rsaquo; 
+    Master View
+</div>
+{% endblock breadcrumbs %}
+
+{% block change_view %}
+    <a href="{{period.get_absolute_url}}period_results/" class="detail">Normal View</a>
+{% endblock change_view %}
+
+{% block user_display %}
+    {{ result.user.username }}
+{% endblock user_display %}

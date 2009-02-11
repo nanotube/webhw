@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load tag_extras %}
+
+{% block title %}
+Results for Period {{ period.number }} of World: {{ world.name }}
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="/">Home</a> &rsaquo; 
+    <a href="{{ period.world.get_absolute_url }}">World</a> &rsaquo; 
+    <a href="{{ period.get_absolute_url }}">Period</a> &rsaquo; 
+    Period Results
+</div>
+{% endblock breadcrumbs %}
+
+{% block content %}
+{% expr period.world.user_is_master(user) as user_is_master %}
+
+{% if user_is_master %}
+    <div class="change_view">
+        {% block change_view %}
+            <a href="{{period.get_absolute_url}}period_results/master/" class="changelink">Master View</a>
+        {% endblock change_view %}
+    </div>
+{% endif %}
+
+<h2>Results for Period <span class="name">{{ period.number }}</span> of World <span class="name">{{ world.name }}</span></h2>
+
+<h3>Period <span class="name">{{ period.number }}</span>: <span class="name">{{ period.name }}</span></h3>
+<p>{% autoescape off %}{{ period.description }}{% endautoescape %}</p>
+
+<p>Period <span class="name">{{ period.number }}</span> risk-free rate: {{ period.risk_free_rate|floatformat:4 }}%.</p>
+
+<table class="site">
+    <tr>
+        <th>Username</th>
+        <th>Period ranking</th>
+        <th>Auctions won</th>
+        <th>Starting wealth</th>
+        <th>Ending wealth</th>
+        <th>Period excess return</th>
+    </tr>
+    {% for result in period_result_list %}
+        <tr>
+            <td>
+                {% block user_display %}
+                    {% ifequal user.id result.user.id %}
+                        {{ result.user.username }}
+                    {% else %}
+                        [hidden]
+                    {% endifequal %}
+                {% endblock user_display %}
+            </td>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ result.auctions_won }}</td>
+            <td>{{ result.starting_wealth }}</td>
+            <td>{{ result.ending_wealth }}</td>
+            <td>{{ result.period_return|floatformat:4 }} %</td>
+        </tr>
+    {% endfor %}
+</table>
+<p>
+    <ul class="notes">
+        <li>Names of users other than you are hidden.</li>
+        <li>Period returns are measured in excess of period risk free rate.</li>
+    </ul>
+</p>
+
+<p><a href="/thegame/userprofile/">[back to user home]</a></p>
+{% endblock %}

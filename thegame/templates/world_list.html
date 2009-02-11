@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}
+List of World Memberships
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="/">Home</a> &rsaquo; 
+    World List
+</div>
+{% endblock breadcrumbs %}
+
+{% block content %}
+
+<p>List of your world memberships:</p>
+<ul>
+{% for world in user_world_list %}
+    <li><a href="{{ world.get_absolute_url }}">{{ world.name }}</a></li>
+{% endfor %}
+</ul>
+
+{% endblock %}

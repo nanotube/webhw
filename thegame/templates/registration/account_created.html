@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}
+Account Created
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="/">Home</a> &rsaquo; 
+    Account Created
+</div>
+{% endblock breadcrumbs %}
+
+{% block content %}
+
+{% if messages %}
+<ul class='user_messages'>
+    {% for message in messages %}
+    <li>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<h3>Application complete</h3>
+
+<p>Your account is pending activation by the administrator of the world you applied to.</p>
+
+
+{% endblock %}

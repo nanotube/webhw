@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}
+User Profile
+{% endblock %}
+
+{% block content %}
+
+<p>Welcome, {{ user.username }}. Your last login was at {{ user.last_login }}.</p>
+<p>Your team members are: {{ user.get_profile.description }}</p>
+
+{% if mastered_worlds_list %}
+<div id="master">
+    <h3>You are the master of the following worlds:</h3>
+    {% for dict in world_and_user_list %}
+        <p><a href="{{ dict.world.get_absolute_url }}master/">{{ dict.world.name }}</a>
+        <ul>
+            <li>Pending user applications: {{ dict.pending_users.count }}</li>
+        </ul>
+    {% endfor %}
+
+    
+</div>
+{% endif %}
+
+<!--
+<a href="../worlds/"><h3>Your world memberships</h3></a>
+-->
+<h3>Your world memberships and statistics</h3>
+<table>
+{% for world in user_world_list %}
+    <tr>
+        <td  class="left">
+            <a href="{{ world.get_absolute_url }}"><h3 class="section">{{ world.name }}</h3></a>
+            <p>{% autoescape off %}{{ world.description }}{% endautoescape %}
+            <table class="site">
+                <tr>
+                    <th>Period</th>
+                    <th>Period status</th>
+                    <th>Number of assets</th>
+                    <th>Auctions won</th>
+                    <th>Risk-free rate</th>
+                    <th>Period excess return</th>
+                </tr>
+                {% for period in world.period_set.all %}
+                    {% if period.is_ended %}
+                        {{ period.calc_period_summary }}
+                    {% endif %}
+                    <tr>
+                        <td class="left"><a href="{{ period.get_absolute_url }}" class="detail">{{ period.number }}: {{ period.name }}</a></td>
+                        <td>{{ period.get_period_status }}</td>
+                        <td>{{ period.asset_set.count }}</td>
+                        <td>
+                        {% if period.summary_completed %}
+                            {% for summary in period.periodsummary_set.all %}
+                                {% ifequal summary.user.id user.id %}
+                                    {{ summary.auctions_won }}
+                                {% endifequal %}
+                            {% endfor %}
+                        {% else %}
+                            Period not yet complete.
+                        {% endif %}
+                        <td>{{ period.risk_free_rate|floatformat:4 }}%</td>
+                        <td>
+                        {% if period.summary_completed %}
+                            {% for summary in period.periodsummary_set.all %}
+                                {% ifequal summary.user.id user.id %}
+                                    <a href="{{ period.get_absolute_url }}period_results/">{{ summary.period_return|floatformat:4 }}%</a>
+                                {% endifequal %}
+                            {% endfor %}
+                        {% else %}
+                            Period not yet complete.
+                        {% endif %}
+                    </tr>
+                {% endfor %}
+            </table>
+            <ul class="notes">
+                <li>
+                    Your current wealth in this world: 
+                    {% for membership in user.get_profile.membership_set.all %}
+                        {% ifequal membership.world.id world.id %}
+                            {{ membership.wealth|floatformat:2 }}
+                        {% endifequal %}
+                    {% endfor %}
+                </li>
+                <li>Number of users in world: {{ world.membership_set.count }}</li>
+                <li>Number of periods in world: {{ world.period_set.count }}</li>
+            </ul>
+        </td>
+    </tr>
+{% endfor %}
+</table>
+
+
+
+{% endblock %}

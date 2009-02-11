@@ -1,0 +1,30 @@
+{% extends "bid_history.html" %}
+{% load filter_extras %}
+{% load tag_extras %}
+
+{% block title %}
+Bid History for Auction for Asset {{ auction.asset.name }}
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="/">Home</a> &rsaquo; 
+    <a href="{{ auction.asset.period.world.get_absolute_url }}">World</a> &rsaquo; 
+    <a href="{{ auction.asset.period.get_absolute_url }}">Period</a> &rsaquo; 
+    <a href="{{ auction.get_absolute_url }}">Auction</a> &rsaquo; 
+    <a href="{{ auction.get_absolute_url }}bid_history/">Bid History</a> &rsaquo; 
+    Master View
+</div>
+{% endblock breadcrumbs %}
+
+{% block change_view %}
+    <a href="{{auction.get_absolute_url}}bid_history/" class="detail">Normal View</a>
+{% endblock change_view %}
+
+{% block bidder_display %}
+    {{ bid.bidder.username }}
+{% endblock bidder_display %}
+
+{% block bid_amount_display %}
+    {{ bid.amount|floatformat:2 }}
+{% endblock bid_amount_display %}
