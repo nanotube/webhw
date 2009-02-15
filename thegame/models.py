@@ -229,7 +229,7 @@ class Bid(models.Model):
     def get_amount_display_value(self):
         '''Truncate bid amount to auction current price
         
-        If bid amount is higher than auction current price (i.e. it is the high bidder's maximum bid,
+        If bid amount is higher than auction current price (i.e. it is the high bidder's maximum bid),
         then for display purposes the bid amount should be capped at the auction's current price
         so as not to reveal the private maximum value of the bidder.
         '''

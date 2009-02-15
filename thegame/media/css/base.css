@@ -140,6 +140,10 @@ td.left {
 	text-align: left;
 }
 
+tr.even {
+	background: white url(../img/nav-bg-reverse.gif) 0 -10px repeat-x;
+}
+
 tr.odd {
 	background-color: #DDEEFF;
 }
@@ -227,9 +231,10 @@ div.change_view { float:right; margin-right: 10px; border: 1px solid #CCCCCC; pa
 }
 
 h3.section {
-	border-top: 1px dotted #666666;
-	border-bottom: 1px dotted #666666;
-	background-color: #EEEEEE;
+	border-top: 1px solid #CCCCCC;
+	border-bottom: 1px solid #CCCCCC;
+	/*background-color: #EEEEEE;*/
+	background: white url(../img/nav-bg-reverse.gif) 0 -10px repeat-x;
 	padding: 2px 10px 2px 10px;
 }
 
@@ -241,7 +246,8 @@ h3.section {
 
 #edit_element_form { padding: 10px; margin-top: 10px; border: 1px solid #CCCCCC; background: white url(../img/nav-bg-reverse.gif) 0 -10px repeat-x; /*background-color: #FFEEDD;*/ }
 
-.expand { padding-left:12px; margin-top: 10px; background:url(../img/arrow-down.gif) 0 .5em no-repeat; }
+a.expand { padding-left:12px; margin-top: 10px; background:url(../img/arrow-down.gif) 0 .5em no-repeat; }
+div.expand { border-bottom: 1px solid #CCCCCC; padding-left: 3px; padding-bottom: 3px; }
 .collapse { padding-left:12px; background:url(../img/arrow-up.gif) 0 .5em no-repeat; }
 .addlink { padding-left:12px; background:url(../img/icon_addlink.gif) 0 .2em no-repeat; }
 .detail { padding-left:18px; background:url(../img/item_detail.gif) 0 0 no-repeat; }

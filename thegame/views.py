@@ -314,14 +314,14 @@ def period_detail_master(request, world_id, period_id):
         return HttpResponseRedirect(period.get_absolute_url())
     
     if request.method == 'POST': # If the form has been submitted...
-        period_form = PeriodForm(request.POST, instance=period) # A form bound to the POST data for asset
+        period_form = PeriodForm(request.POST, instance=period, queryset = request.user.get_profile().mastered_worlds.all()) # A form bound to the POST data for asset
         if period_form.is_valid():
             new_period = period_form.save()
             
             request.user.message_set.create(message = "Period edited successfully.")
             return HttpResponseRedirect('.')
     else:
-        period_form = PeriodForm(instance = period)
+        period_form = PeriodForm(instance = period, queryset = request.user.get_profile().mastered_worlds.all())
     
     return render_to_response('period_detail_master.html', {'period':period, 'world':world, 'period_form':period_form}, context_instance=RequestContext(request))
 
@@ -337,7 +337,7 @@ def auction_detail_master(request, auction_id):
         return HttpResponseRedirect(auction.get_absolute_url())
     
     if request.method == 'POST': # If the form has been submitted...
-        asset_form = AssetForm(request.POST, instance=auction.asset) # A form bound to the POST data for asset
+        asset_form = AssetForm(request.POST, instance=auction.asset, queryset = auction.asset.period.world.period_set.all()) # A form bound to the POST data for asset
         auction_form = AuctionForm(request.POST, instance=auction) # A form bound to the POST data for auction
         if asset_form.is_valid() and auction_form.is_valid():
             new_asset = asset_form.save()
@@ -347,7 +347,7 @@ def auction_detail_master(request, auction_id):
             request.user.message_set.create(message = "Auction edited successfully.")
             return HttpResponseRedirect('.')
     else:
-        asset_form = AssetForm(instance = auction.asset)
+        asset_form = AssetForm(instance = auction.asset, queryset = auction.asset.period.world.period_set.all())
         auction_form = AuctionForm(instance = auction)
 
     return render_to_response('auction_detail_master.html', {'auction':auction, 'asset_form':asset_form, 'auction_form':auction_form}, context_instance=RequestContext(request))

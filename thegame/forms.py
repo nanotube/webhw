@@ -76,13 +76,42 @@ class AuctionForm(forms.ModelForm):
         #js = (settings.ADMIN_MEDIA_PREFIX + "js/core.js", )
 
 class AssetForm(forms.ModelForm):
+    description = forms.CharField(widget=forms.Textarea(attrs={'cols':'80', 'rows':'15',}))
+    name = forms.CharField(widget=forms.TextInput(attrs={'size':'50'}))
+    period = forms.ModelChoiceField(queryset = Period.objects.none())
+    
     class Meta:
         model = Asset
-        exclude = ('period',)
+        #exclude = ('period',)
+    
+    def __init__(self, *args, **kwargs):
+        '''Accepts an extra argument, queryset, which sets the world selection choices.'''
+        try:
+            queryset = kwargs['queryset']
+            del kwargs['queryset']
+        except KeyError:
+            queryset = Period.objects.none()
+        super(AssetForm, self).__init__(*args, **kwargs)
+        self.fields["period"].queryset = queryset
 
+    
 class PeriodForm(forms.ModelForm):
+    description = forms.CharField(widget=forms.Textarea(attrs={'cols':'80', 'rows':'15',}))
+    name = forms.CharField(widget=forms.TextInput(attrs={'size':'50'}))
     start_time = forms.DateTimeField(widget=admin_widgets.AdminSplitDateTime())
     end_time = forms.DateTimeField(widget=admin_widgets.AdminSplitDateTime())
+    world = forms.ModelChoiceField(queryset = World.objects.none())
+    
+    def __init__(self, *args, **kwargs):
+        '''Accepts an extra argument, queryset, which sets the world selection choices.'''
+        try:
+            queryset = kwargs['queryset']
+            del kwargs['queryset']
+        except KeyError:
+            queryset = World.objects.none()
+        super(PeriodForm, self).__init__(*args, **kwargs)
+        self.fields["world"].queryset = queryset
+        
     class Meta:
         model = Period
 

@@ -46,7 +46,7 @@ User Profile
                     {% if period.is_ended %}
                         {{ period.calc_period_summary }}
                     {% endif %}
-                    <tr>
+                    <tr class="{% cycle 'even' 'odd' %}">
                         <td class="left"><a href="{{ period.get_absolute_url }}" class="detail">{{ period.number }}: {{ period.name }}</a></td>
                         <td>{{ period.get_period_status }}</td>
                         <td>{{ period.asset_set.count }}</td>

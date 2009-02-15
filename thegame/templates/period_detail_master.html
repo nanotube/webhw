@@ -30,8 +30,9 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
 {% endblock change_view %}
 
 {% block edit_element_form %}
-
+<div class="expand">
 <a href="#" onclick="Effect.toggle('edit_element_form', 'blind', {duration: 0.5}); return false;" class="expand">Edit this period</a>
+</div>
 <div id="edit_element_form">
     <form action='.' method="POST">
     <table class="formtable">
