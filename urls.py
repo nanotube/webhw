@@ -12,6 +12,9 @@ urlpatterns = patterns('',
     (r'^thegame/', include('financegame.thegame.urls')),
     (r'^$', include('financegame.thegame.urls')),
     
+    # maintenance mode path
+    (r'^maintenance/$', 'django.views.generic.simple.direct_to_template', {'template': 'maintenance.html'}),
+    
     (r'^site_media/(?P<path>.*)$', 'django.views.static.serve',
         {'document_root': 'thegame/media'}),
     

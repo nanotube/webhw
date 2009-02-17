@@ -8,6 +8,9 @@ ADMINS = (
     ('Daniel Folkinshteyn', 'dfolkins@gmail.com'),
 )
 
+MAINTENANCE_MODE = False
+MAINTENANCE_PATH = '/maintenance/'
+
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'sqlite3'           # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
@@ -62,6 +65,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'financegame.thegame.middleware.MaintenanceMiddleware',
 )
 
 ROOT_URLCONF = 'financegame.urls'
