@@ -60,8 +60,9 @@ class UserProfileAdmin(admin.ModelAdmin):
     get_username.short_description = "User"
     
 class MembershipAdmin(admin.ModelAdmin):
-    list_display = ('get_username', 'get_world', 'wealth')
-    search_fields = ('user__username', 'world__name')
+    list_display = ('get_username', 'get_world', 'wealth', 'approved', )
+    search_fields = ('user__username', 'world__name', )
+    list_filter = ('approved', )
     
     def get_world(self, obj):
         return unicode(obj.world.name)

@@ -36,6 +36,8 @@ Results for Period {{ period.number }} of World: {{ world.name }}
     <tr>
         <th>Username</th>
         <th>Period ranking</th>
+        <th>Bids placed</th>
+        <th>Auctions bid on</th>
         <th>Auctions won</th>
         <th>Starting wealth</th>
         <th>Ending wealth</th>
@@ -53,9 +55,11 @@ Results for Period {{ period.number }} of World: {{ world.name }}
                 {% endblock user_display %}
             </td>
             <td>{{ forloop.counter }}</td>
+            <td>{{ result.bids_placed }}</td>
+            <td>{{ result.auctions_bid_on }}</td>
             <td>{{ result.auctions_won }}</td>
-            <td>{{ result.starting_wealth }}</td>
-            <td>{{ result.ending_wealth }}</td>
+            <td>{{ result.starting_wealth|floatformat:2 }}</td>
+            <td>{{ result.ending_wealth|floatformat:2 }}</td>
             <td>{{ result.period_return|floatformat:4 }} %</td>
         </tr>
     {% endfor %}

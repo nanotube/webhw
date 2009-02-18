@@ -80,7 +80,7 @@ def create_account(request, template_name):
             new_userprofile = UserProfile(user=new_user, description=form.cleaned_data['description'])
             new_userprofile.save()
             
-            new_membership = Membership(user = new_userprofile, wealth=world.initial_wealth, world = world)
+            new_membership = Membership(user = new_userprofile, wealth=world.initial_wealth, world = world, approved=False)
             new_membership.save()
             
             # send mail to the world admins, now that someone applied.

@@ -38,6 +38,8 @@ class PeriodSummary(models.Model):
     ending_wealth = models.FloatField()
     period_return = models.FloatField()
     auctions_won = models.IntegerField(default=0)
+    bids_placed = models.IntegerField(default=0)
+    auctions_bid_on = models.IntegerField(default=0)
     
     def __unicode__(self):
         return u'%s: %s: %s' % (self.user.username, self.period.number, self.period_return)
@@ -113,13 +115,15 @@ class Period(models.Model):
                     if asset.auction.high_bid is not None and asset.auction.high_bid.bidder.id == membership.user.user.id:
                         final_wealth = final_wealth - asset.auction.current_price + asset.true_value
                         auctions_won = auctions_won + 1
-                        
-                # total_bids = Bid.objects.filter(bidder = membershi.user.user, bid__auction__asset__period = self).count()
-                # auctions_bid_on = total_bids.values('auction').distinct().count()
+                
                 membership.wealth = final_wealth
                 membership.save()
                 
-                ps = PeriodSummary(user = membership.user.user, period = self, starting_wealth = initial_wealth, ending_wealth = final_wealth, period_return = (final_wealth/initial_wealth - 1)*100.0, auctions_won = auctions_won)
+                bids_placed = Bid.objects.filter(bidder = membership.user.user, auction__asset__period = self)
+                auctions_bid_on = bids_placed.values('auction').distinct().count()
+                bids_placed = bids_placed.count()
+                
+                ps = PeriodSummary(user = membership.user.user, period = self, starting_wealth = initial_wealth, ending_wealth = final_wealth, period_return = (final_wealth/initial_wealth - 1)*100.0, auctions_won = auctions_won, bids_placed = bids_placed, auctions_bid_on = auctions_bid_on)
                 ps.save()
             
             return ''
@@ -217,6 +221,7 @@ class Membership(models.Model):
     user = models.ForeignKey(UserProfile)
     world = models.ForeignKey(World)
     wealth = models.FloatField()
+    approved = models.BooleanField(default=False)
     
     def __unicode__(self):
         return u'%s, %s' % (self.user.user.username, self.world.name)
