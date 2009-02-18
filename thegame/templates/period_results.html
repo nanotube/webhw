@@ -44,7 +44,7 @@ Results for Period {{ period.number }} of World: {{ world.name }}
         <th>Period excess return</th>
     </tr>
     {% for result in period_result_list %}
-        <tr>
+        <tr class="{% cycle 'even' 'odd' %}">
             <td>
                 {% block user_display %}
                     {% ifequal user.id result.user.id %}
