@@ -246,9 +246,9 @@ h3.section {
 
 div.edit_element_form { padding: 10px; margin-top: 0px; margin-bottom: 3px; border: 1px solid #CCCCCC; background: white url(../img/nav-bg-reverse.gif) 0 -10px repeat-x; }
 
-a.expand { padding-left:12px; margin-top: 10px; background:url(../img/arrow-down.gif) 0 .5em no-repeat; }
+a.expand { padding-left:12px; margin-top: 10px; background:url(../img/arrow-down.gif) 0 .5em no-repeat; outline: none;}
 div.expand { border-bottom: 1px solid #CCCCCC; padding-left: 3px; padding-bottom: 3px; margin-bottom: 3px;}
-.collapse { padding-left:12px; background:url(../img/arrow-up.gif) 0 .5em no-repeat; }
+.collapse { padding-left:12px; background:url(../img/arrow-up.gif) 0 .5em no-repeat; font-size: 11px; color: gray;}
 .addlink { padding-left:12px; background:url(../img/icon_addlink.gif) 0 .2em no-repeat; }
 .detail { padding-left:18px; background:url(../img/item_detail.gif) 0 0 no-repeat; }
 .yeslink { padding-left:12px; background:url(../img/icon-yes.gif) 0 .2em no-repeat; }
