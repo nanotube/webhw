@@ -13,7 +13,7 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
 {% endblock extra_head %}
 
 {% block bodytag %}
-<body onLoad="document.getElementById('edit_element_form').style.display='none';">
+<body onLoad="divstohide = document.getElementById('master_content').getElementsByTagName('div'); for (var i in divstohide) { if (divstohide[i].className == 'edit_element_form') {divstohide[i].style.display='none'; } } ">
 {% endblock bodytag %}
 
 {% block breadcrumbs %}
@@ -30,10 +30,12 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
 {% endblock change_view %}
 
 {% block edit_element_form %}
+
+<div id="master_content">
 <div class="expand">
-<a href="#" onclick="Effect.toggle('edit_element_form', 'blind', {duration: 0.5}); return false;" class="expand">Edit this period</a>
+<a href="#" onclick="Effect.toggle('edit_element_form_1', 'blind', {duration: 0.5}); return false;" class="expand">Edit this period</a>
 </div>
-<div id="edit_element_form">
+<div class="edit_element_form" id="edit_element_form_1">
     <form action='.' method="POST">
     <table class="formtable">
     <caption>Edit period attributes</caption>
@@ -46,7 +48,8 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
     </form>
     
     <br>
-    <a href="#" onclick="Effect.toggle('edit_element_form', 'blind', {duration: 0.5}); return false;" class="collapse">Hide form</a>
+    <a href="#" onclick="Effect.toggle('edit_element_form_1', 'blind', {duration: 0.5}); return false;" class="collapse">Hide form</a>
+</div>
 </div>
 
 {% endblock edit_element_form %}
