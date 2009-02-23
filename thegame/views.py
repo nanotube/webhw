@@ -346,6 +346,8 @@ def auction_detail_master(request, auction_id):
             
             request.user.message_set.create(message = "Auction edited successfully.")
             return HttpResponseRedirect('.')
+        else:
+            request.user.message_set.create(message = "Errors in form.")
     else:
         asset_form = AssetForm(instance = auction.asset, queryset = auction.asset.period.world.period_set.all())
         auction_form = AuctionForm(instance = auction)

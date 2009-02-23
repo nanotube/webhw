@@ -223,6 +223,10 @@ class Membership(models.Model):
     wealth = models.FloatField()
     approved = models.BooleanField(default=False)
     
+    #~ @models.permalink
+    #~ def get_absolute_url(self):
+        #~ return self.world.get_absolute_url() + 'membership/' + unicode(self.id) + '/'
+    
     def __unicode__(self):
         return u'%s, %s' % (self.user.user.username, self.world.name)
 

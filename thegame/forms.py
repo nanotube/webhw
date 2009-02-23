@@ -66,7 +66,7 @@ class WorldForm(forms.ModelForm):
         exclude = ('mastered_worlds',)
         
 class AuctionForm(forms.ModelForm):
-    end_time = forms.DateTimeField(widget=admin_widgets.AdminSplitDateTime())
+    end_time = forms.SplitDateTimeField(widget=admin_widgets.AdminSplitDateTime, required=False)
     class Meta:
         model = Auction
         exclude = ('asset','high_bid','current_price','max_end_time',)

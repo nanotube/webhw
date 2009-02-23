@@ -80,7 +80,13 @@ World Master of World: {{ world.name }}
 </div>
 <div class="edit_element_form" id="edit_element_form_3">
     <table class="edit_items">
-    <caption>Edit users</caption>
+        <tr>
+            <th>Username</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>[Un]Approve</th>
+            <th>Delete</th>
+        </tr>
     {% for membership in world.membership_set.all %}
         <tr>
             <td>
@@ -90,13 +96,21 @@ World Master of World: {{ world.name }}
                 {{ membership.user.description }}
             </td>
             <td>
-                {{ membership.approved }}
+                {% if membership.approved %}
+                    <img src="/site_media/img/icon-yes.gif" alt="True">
+                {% else %}
+                    <img src="/site_media/img/icon-no.gif" alt="False">
+                {% endif %}
             </td>
             <td>
-                <a href="{{ membership.user.get_absolute_url }}eject/" class="deletelink">Eject from world</a>
+                {% if membership.approved %}
+                    <a href="{{ membership.user.get_absolute_url }}reject/" class="nolink">Unapprove</a>
+                {% else %}
+                    <a href="{{ membership.user.get_absolute_url }}approve/" class="yeslink">Approve</a>
+                {% endif %}
             </td>
             <td>
-                <a href="{{ membership.user.get_absolute_url }}eject/" class="yeslink">Approve world membership</a>
+                <a href="{{ membership.user.get_absolute_url }}eject/" class="deletelink">Delete</a>
             </td>
         </tr>
     {% endfor %}
