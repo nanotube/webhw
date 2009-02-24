@@ -25,6 +25,9 @@ Results for Period {{ period.number }} of World: {{ world.name }}
     </div>
 {% endif %}
 
+{% block edit_element_form %}
+{% endblock edit_element_form %}
+
 <h2>Results for Period <span class="name">{{ period.number }}</span> of World <span class="name">{{ world.name }}</span></h2>
 
 <h3>Period <span class="name">{{ period.number }}</span>: <span class="name">{{ period.name }}</span></h3>

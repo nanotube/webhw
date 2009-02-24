@@ -1,8 +1,20 @@
 {% extends "period_results.html" %}
 
+{% block extra_head %}
+<script src="/admin/jsi18n/" type="text/javascript"></script>
+<script src="/site_media/js/admin/core.js" type="text/javascript"></script>
+<script src="/site_media/js/admin/calendar.js" type="text/javascript"></script>
+<script src="/site_media/js/admin/DateTimeShortcuts.js" type="text/javascript"></script>
+<link rel="stylesheet" type="text/css" href="/site_media/css/calendar.css" />
+{% endblock extra_head %}
+
 {% block title %}
 Results for Period {{ period.number }} of World: {{ world.name }}
 {% endblock %}
+
+{% block bodytag %}
+<body onLoad="divstohide = document.getElementById('master_content').getElementsByTagName('div'); for (var i in divstohide) { if (divstohide[i].className == 'edit_element_form') {divstohide[i].style.display='none'; } } ">
+{% endblock bodytag %}
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">
@@ -17,6 +29,31 @@ Results for Period {{ period.number }} of World: {{ world.name }}
 {% block change_view %}
     <a href="{{period.get_absolute_url}}period_results/" class="detail">Normal View</a>
 {% endblock change_view %}
+
+{% block edit_element_form %}
+
+<div id="master_content">
+<div class="expand">
+<a href="#" onclick="Effect.toggle('edit_element_form', 'blind', {duration: 0.5}); return false;" class="expand">Edit period results</a>
+</div>
+<div class="edit_element_form" id="edit_element_form">
+    <form action='.' method="POST">
+    <table class="formtable">
+    <caption>Recalculate period results</caption>
+    <tr>
+    {{ form.as_table }}
+    <td><input type="submit" value="Recalculate >" /></td>
+    </tr>
+    </table>
+    </form>
+    
+    <br>
+    <a href="#" onclick="Effect.toggle('edit_element_form', 'blind', {duration: 0.5}); return false;" class="collapse">Hide form</a>
+</div>
+</div>
+
+{% endblock edit_element_form %}
+
 
 {% block user_display %}
     {{ result.user.username }}

@@ -36,17 +36,18 @@ class PeriodSummary(models.Model):
     period = models.ForeignKey('Period')
     starting_wealth = models.FloatField()
     ending_wealth = models.FloatField()
+    wealth_created = models.FloatField()
     period_return = models.FloatField()
     auctions_won = models.IntegerField(default=0)
     bids_placed = models.IntegerField(default=0)
     auctions_bid_on = models.IntegerField(default=0)
     
-    def wealth_created(self):
-        try:
-            wealth_created = self.ending_wealth - self.starting_wealth
-        except TypeError:
-            wealth_created = None
-        return wealth_created
+    #~ def wealth_created(self):
+        #~ try:
+            #~ wealth_created = self.ending_wealth - self.starting_wealth
+        #~ except TypeError:
+            #~ wealth_created = None
+        #~ return wealth_created
     
     def __unicode__(self):
         return u'%s: %s: %s' % (self.user.username, self.period.number, self.period_return)
@@ -130,13 +131,66 @@ class Period(models.Model):
                 auctions_bid_on = bids_placed.values('auction').distinct().count()
                 bids_placed = bids_placed.count()
                 
-                ps = PeriodSummary(user = membership.user.user, period = self, starting_wealth = initial_wealth, ending_wealth = final_wealth, period_return = (final_wealth/initial_wealth - 1)*100.0, auctions_won = auctions_won, bids_placed = bids_placed, auctions_bid_on = auctions_bid_on)
+                ps = PeriodSummary(user = membership.user.user, period = self, starting_wealth = initial_wealth, ending_wealth = final_wealth, wealth_created = (final_wealth - initial_wealth), period_return = (final_wealth/initial_wealth - 1)*100.0, auctions_won = auctions_won, bids_placed = bids_placed, auctions_bid_on = auctions_bid_on)
                 ps.save()
             
             return ''
         else:
             return ''
+    
+    def recalc_period_summary(self, reset_world_wealth=False):
+        ''' recalculate period summary results.
+        
+        this is to be used in case any asset values are updated after period summaries are over, etc.
+        
+        calculates returns and wealth using previous period's ending_wealth (or, for 1st period, default world starting wealth)
+        '''
+        periodsummaries = self.periodsummary_set.all()
+        if reset_world_wealth:
+            membership_list = self.world.membership_set.all()
+        if self.number > 1:
+            previousperiodsummaries = self.world.period_set.get(number=self.number -1).periodsummary_set.all()
+        else:
+            previousperiodsummaries = None
+        
+        for summary in periodsummaries:
+            auctions_won = 0
             
+            if previousperiodsummaries:
+                initial_wealth = previousperiodsummaries.get(user = summary.user).ending_wealth
+            else:
+                initial_wealth = self.world.initial_wealth
+                
+            final_wealth = initial_wealth
+            for asset in self.asset_set.all():
+                if asset.auction.high_bid is not None and asset.auction.high_bid.bidder.id == summary.user.id:
+                    final_wealth = final_wealth - asset.auction.current_price + asset.true_value
+                    auctions_won = auctions_won + 1
+            
+            #membership.wealth = final_wealth
+            #membership.save()
+            
+            bids_placed = Bid.objects.filter(bidder = summary.user, auction__asset__period = self)
+            auctions_bid_on = bids_placed.values('auction').distinct().count()
+            bids_placed = bids_placed.count()
+            
+            summary.starting_wealth = initial_wealth
+            summary.ending_wealth = final_wealth
+            summary.wealth_created = (final_wealth - initial_wealth)
+            summary.period_return = (final_wealth/initial_wealth - 1)*100.0
+            summary.auctions_won = auctions_won
+            summary.bids_placed = bids_placed
+            summary.auctions_bid_on = auctions_bid_on
+            
+            summary.save()
+            
+            if reset_world_wealth:
+                membership = membership_list.get(user__user = summary.user)
+                membership.wealth = final_wealth
+                membership.save()
+            
+        return ''    
+    
     def __unicode__(self):
         return u'%s: %s: %s' % (self.world.name, self.number, self.name)
 

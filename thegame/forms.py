@@ -66,7 +66,7 @@ class WorldForm(forms.ModelForm):
         exclude = ('mastered_worlds',)
         
 class AuctionForm(forms.ModelForm):
-    end_time = forms.SplitDateTimeField(widget=admin_widgets.AdminSplitDateTime, required=False)
+    end_time = forms.SplitDateTimeField(widget=admin_widgets.AdminSplitDateTime, required=False, help_text="Leave this blank to let auction end at period end time.")
     class Meta:
         model = Auction
         exclude = ('asset','high_bid','current_price','max_end_time',)
@@ -115,3 +115,5 @@ class PeriodForm(forms.ModelForm):
     class Meta:
         model = Period
 
+class RecalculatePeriodResultsForm(forms.Form):
+    last_period = forms.BooleanField(help_text="If this is the latest completed period, and you want to reset the users' current world wealth to the ending wealth of this period, check this box.", required=False)

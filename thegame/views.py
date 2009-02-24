@@ -8,7 +8,7 @@ from auth_views import login as generic_login
 from django.contrib.auth.views import logout as generic_logout
 
 from financegame.thegame.models import World, Period, Auction, Bid, UserProfile, Membership
-from financegame.thegame.forms import UserCreationForm, ContactForm, WorldForm, AuctionForm, AssetForm, PeriodForm
+from financegame.thegame.forms import UserCreationForm, ContactForm, WorldForm, AuctionForm, AssetForm, PeriodForm, RecalculatePeriodResultsForm
 from django.contrib.auth.models import User
 
 from django.conf import settings
@@ -144,7 +144,7 @@ def period_results(request, world_id, period_id):
         request.user.message_set.create(message = "Period " + unicode(period.number) + " of World " + world.name + " is not yet complete.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
-    period_result_list = period.periodsummary_set.all().order_by('-period_return')
+    period_result_list = period.periodsummary_set.all().order_by('-wealth_created')
     return render_to_response('period_results.html', {'period':period, 'world':world, 'period_result_list':period_result_list}, context_instance=RequestContext(request))
 
 @login_required
@@ -380,5 +380,16 @@ def period_results_master(request, world_id, period_id):
         request.user.message_set.create(message = "Period " + unicode(period.number) + " of World " + world.name + " is not yet complete.")
         return HttpResponseRedirect(request.user.get_profile().get_absolute_url())
     
+    if request.method == 'POST': # If the form has been submitted...
+        form = RecalculatePeriodResultsForm(request.POST)
+        if form.is_valid():
+            period.recalc_period_summary(form.cleaned_data['last_period'])
+            request.user.message_set.create(message = "Results recalculated.")
+            return HttpResponseRedirect('.')
+        else: 
+            request.user.message_set.create(message = "Form errors.")
+    else:
+        form = RecalculatePeriodResultsForm()
+    
     period_result_list = period.periodsummary_set.all().order_by('-period_return')
-    return render_to_response('period_results_master.html', {'period':period, 'world':world, 'period_result_list':period_result_list}, context_instance=RequestContext(request))
+    return render_to_response('period_results_master.html', {'period':period, 'world':world, 'period_result_list':period_result_list, 'form':form}, context_instance=RequestContext(request))
