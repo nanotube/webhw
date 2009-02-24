@@ -41,6 +41,13 @@ class PeriodSummary(models.Model):
     bids_placed = models.IntegerField(default=0)
     auctions_bid_on = models.IntegerField(default=0)
     
+    def wealth_created(self):
+        try:
+            wealth_created = self.ending_wealth - self.starting_wealth
+        except TypeError:
+            wealth_created = None
+        return wealth_created
+    
     def __unicode__(self):
         return u'%s: %s: %s' % (self.user.username, self.period.number, self.period_return)
 
