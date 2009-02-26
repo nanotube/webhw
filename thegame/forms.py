@@ -116,4 +116,4 @@ class PeriodForm(forms.ModelForm):
         model = Period
 
 class RecalculatePeriodResultsForm(forms.Form):
-    last_period = forms.BooleanField(help_text="If this is the latest completed period, and you want to reset the users' current world wealth to the ending wealth of this period, check this box.", required=False)
+    latest_period = forms.BooleanField(help_text="If this is the latest completed period, and you want to reset the users' current world wealth to the ending wealth of this period, check this box.", required=False)

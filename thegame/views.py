@@ -383,7 +383,7 @@ def period_results_master(request, world_id, period_id):
     if request.method == 'POST': # If the form has been submitted...
         form = RecalculatePeriodResultsForm(request.POST)
         if form.is_valid():
-            period.recalc_period_summary(form.cleaned_data['last_period'])
+            period.recalc_period_summary(form.cleaned_data['latest_period'])
             request.user.message_set.create(message = "Results recalculated.")
             return HttpResponseRedirect('.')
         else: 
