@@ -383,7 +383,7 @@ def period_results_master(request, world_id, period_id):
     if request.method == 'POST': # If the form has been submitted...
         form = RecalculatePeriodResultsForm(request.POST)
         if form.is_valid():
-            period.recalc_period_summary(form.cleaned_data['latest_period'])
+            period.recalc_period_summary(form.cleaned_data['update_wealth'])
             request.user.message_set.create(message = "Results recalculated.")
             return HttpResponseRedirect('.')
         else: 
@@ -391,5 +391,5 @@ def period_results_master(request, world_id, period_id):
     else:
         form = RecalculatePeriodResultsForm()
     
-    period_result_list = period.periodsummary_set.all().order_by('-period_return')
+    period_result_list = period.periodsummary_set.all().order_by('-wealth_created')
     return render_to_response('period_results_master.html', {'period':period, 'world':world, 'period_result_list':period_result_list, 'form':form}, context_instance=RequestContext(request))
