@@ -59,7 +59,13 @@ Auction for Asset {{ auction.asset.name }}
 {% endblock edit_element_form %}
 
 {% block bidder_display %}
-    {% firstof auction.high_bid.bidder.username "--" %}
+    <ol>
+    {% for winning_bid in auction.winning_bid_set.all %}
+        <li>{{ winning_bid.bidder.username }}: {{ winning_bid.bidder.last_name }}, {{ winning_bid.bidder.first_name }}</li>
+    {% empty %}
+        <li>Nobody</li>
+    {% endfor %}
+    </ol>
 {% endblock bidder_display %}
 
 {% block true_value %}

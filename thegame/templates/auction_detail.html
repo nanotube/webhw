@@ -20,6 +20,9 @@ Auction for Asset {{ auction.asset.name }}
 {% endblock breadcrumbs %}
 
 {% block content %}
+
+{{ auction.calc_result }}
+
 {% expr auction.asset.period.world.user_is_master(user) as user_is_master %}
 
 {% expr auction.did_user_bid(user) as user_bid %}
