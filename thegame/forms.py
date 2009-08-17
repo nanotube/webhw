@@ -71,7 +71,7 @@ class AuctionForm(forms.ModelForm):
     #end_time = forms.SplitDateTimeField(widget=admin_widgets.AdminSplitDateTime, required=False, help_text="Leave this blank to let auction end at period end time.")
     class Meta:
         model = Auction
-        exclude = ('asset','high_bid','current_price','final_price','max_end_time',)
+        exclude = ('asset','final_price',)
     
     #class Media:
     #    css = { 'all': ('/site_media/css/calendar.css',) }

@@ -9,11 +9,7 @@ import datetime
 # Create your models here.
 class World(models.Model):
     name = models.CharField(max_length=200)
-    #pub_date = models.DateTimeField('date published')
     description = models.TextField()
-    minimum_bid_increment = models.DecimalField("Minimum Bid Increment", default=1.0, max_digits=10, decimal_places=2)
-    maximum_auction_end_time_offset = models.FloatField("Maximum auction end time offset, in hours", default=2.0)
-    auction_end_time_offset_per_bid = models.FloatField("Auction extension per bid, in minutes", default=5.0)
     initial_wealth = models.FloatField("Initial user wealth.", default=100000.0)
     lone_bidder_profit = models.FloatField("Default lone bidder profit", default=100000.0)
     default_nobid_error = models.FloatField("Default no-bid error", default=100000.0)
@@ -42,7 +38,6 @@ class PeriodSummary(models.Model):
     period_return = models.FloatField()
     auctions_won = models.IntegerField(default=0)
     bids_placed = models.IntegerField(default=0)
-    #auctions_bid_on = models.IntegerField(default=0)
     mean_absolute_error = models.FloatField()
         
     def __unicode__(self):
@@ -53,12 +48,10 @@ class Period(models.Model):
     number = models.IntegerField()
     name = models.CharField(max_length=200)
     description = models.TextField()
-    #viewable = models.BooleanField()
     risk_free_rate = models.FloatField()
     start_time = models.DateTimeField('Period Start Time')
     end_time = models.DateTimeField('Period End Time')
     summary_completed = models.BooleanField(default=False)
-    #votes = models.IntegerField()
     
     @models.permalink
     def get_absolute_url(self):
@@ -198,8 +191,6 @@ class Auction(models.Model):
     asset = models.OneToOneField(Asset)
     final_price = models.FloatField(null=True, blank=True)
     result_completed = models.BooleanField(default=False)
-    #starting_bid = models.FloatField()
-    #high_bid = models.OneToOneField('Bid', related_name='high_bid', null=True, blank=True)
     
     @models.permalink
     def get_absolute_url(self):
@@ -207,24 +198,7 @@ class Auction(models.Model):
     
     def is_ended(self):
         return self.asset.period.is_ended()
-    
-    #def minimum_bid(self):
-        #if self.bid_set.count() > 0:
-            #minimum_bid = self.current_price + self.asset.period.world.minimum_bid_increment
-        #else:
-            #minimum_bid = self.starting_bid
-        #return minimum_bid
-
-    #def get_max_end_time(self):
-        #if self.max_end_time is None:
-            #td = datetime.timedelta(hours=self.asset.period.world.maximum_auction_end_time_offset)
-            #self.max_end_time = self.asset.period.end_time + td
-            #self.save()
-        #return self.max_end_time
-        ##~ td = datetime.timedelta(hours=self.asset.period.world.maximum_auction_end_time_offset)
-        ##~ max_end_time = self.asset.period.end_time + td
-        ##~ return max_end_time
-    
+        
     def get_end_time(self):
         return self.asset.period.end_time
     
@@ -237,14 +211,7 @@ class Auction(models.Model):
             return user_bid
         except ObjectDoesNotExist:
             return False
-    
-    #def get_current_price(self):
-        #if self.bid_set.count() > 0:
-            #cur_price = self.current_price
-        #else:
-            #cur_price = self.starting_bid
-        #return cur_price
-    
+        
     def calc_result(self):
         if not self.result_completed and self.is_ended():
             self.result_completed = True #set the flag right away, so that we don't attempt to do this again.
@@ -282,10 +249,6 @@ class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
     mastered_worlds = models.ManyToManyField(World, related_name='mastered_worlds', null=True, blank=True)
     world_memberships = models.ManyToManyField(World, related_name='member_worlds', through='Membership')
-    #wealth = models.FloatField()
-    #description = models.CharField(max_length=200, null=True, blank=True)
-    #~ def get_current_wealth(self):
-        #~ self.user.membership_set.filter(
     
     @models.permalink
     def get_absolute_url(self):
@@ -300,11 +263,7 @@ class Membership(models.Model):
     world = models.ForeignKey(World)
     wealth = models.FloatField()
     approved = models.BooleanField(default=False)
-    
-    #~ @models.permalink
-    #~ def get_absolute_url(self):
-        #~ return self.world.get_absolute_url() + 'membership/' + unicode(self.id) + '/'
-    
+        
     def __unicode__(self):
         return u'%s, %s' % (self.user.user.username, self.world.name)
 
