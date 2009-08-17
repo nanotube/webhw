@@ -18,6 +18,7 @@ Auction for Asset {{ auction.asset.name }}: Confirm Bid
 
 {% block content %}
 {% expr auction.asset.period.world.user_is_master(user) as user_is_master %}
+{% expr auction.did_user_bid(user) as user_bid %}
 
 {% if error_message %}
 <ul class="error_message">
@@ -29,7 +30,7 @@ Auction for Asset {{ auction.asset.name }}: Confirm Bid
 
 {% if not auction.is_ended %}
 <table class="formtable"><tr><td>
-    <p>You are about to enter a bid in the amount of <strong>{{ bid_amount|floatformat:2 }}</strong>! If you are sure you want to place this bid, please click the "Confirm Bid" button below. Otherwise, you can go <a href=".">back to auction listing</a> and modify your bid.
+    <p>You are about to enter a bid in the amount of <strong>{{ bid_amount|floatformat:2 }}</strong>! If you are sure you want to place this bid, please click the "Confirm Bid" button below. Otherwise, you can go <a href=".">back to auction listing</a> to modify your bid.
         <form action="." method="post">
         <input type="hidden" name="bid_amount" value="{{ bid_amount}}">
         <input type="hidden" name="confirmation" value="True">
@@ -46,35 +47,70 @@ Auction for Asset {{ auction.asset.name }}: Confirm Bid
 <table id="auction_detail">
     <caption>Auction Details</caption>
     <tr>
-        {% ifequal auction.bid_set.count 0 %}
-            <th>Starting bid:</th>
-            <td>{{ auction.starting_bid|floatformat:2 }}</td>
-        {% else %}
-            <th>Current bid:</th>
-            <td>{{ auction.current_price|floatformat:2 }}</td>
-        {% endifequal %}
-    </tr>
-    <tr>
-        <th>Current high bidder:</th>
+        <th>Your bid status:</th>
         <td>
-            {% if user_is_master %}
-                {{ auction.high_bid.bidder.username }}
+            {% if user_bid %}
+                You have bid on this auction.<br>
+                Your current bid is {{ user_bid.amount }}.
             {% else %}
-                {% ifequal auction.high_bid.bidder.id user.id %}
-                    <span class="winner">It's You!</span>
-                {% else %}
-                    <span class="loser">Not You!</span>
-                {% endifequal %}
+                You have not yet bid on this auction.
             {% endif %}
         </td>
     </tr>
+    {% if auction.is_ended %}
+    <tr>
+        <th>Auction winner:</th>
+        <td>
+            {% block bidder_display %}
+                {% if user_bid.winner_of %}
+                    {% ifequal auction.winning_bid_set.count 1 %}
+                        <span class="winner">{{ user.username }}</span>
+                    {% else %}
+                        <span class="winner">{{ user.username }}</span> along with {{ auction.winning_bid_set.count|full_subtract:1|floatformat:0 }} other participants.
+                    {% endifequal %}
+                {% else %}
+                    <span class="loser">Not You!</span>
+                {% endif %}
+            {% endblock bidder_display %}
+        </td>
+    </tr>
+    {% endif %}
+    <tr>
+        {% if not auction.is_ended %}
+            <th>Your maximum bid:<br>
+            <span class="note">Enter {{ auction.minimum_bid|floatformat:2 }} or more.</span></th>
+            <th>
+                <form name="bid" action="." method="post">
+                <input type="text" name="bid_amount">
+                <input type="submit" value="Place Bid">
+                </form>
+            </td>
+        {% else %}
+            <th>Final price:</th>
+            <td>
+                {% ifequal auction.bid_set.count 0 %}
+                    Not sold
+                {% else %}
+                    {{ auction.final_price|floatformat:2 }}
+                {% endifequal %}
+            </td>
+        {% endif %}
+    </tr>
+    {% block true_value %}
+    {% if auction.is_ended %}
+        <tr>
+            <th>Asset True Value:</th>
+            <td>{{ auction.asset.true_value|floatformat:2 }}</td>
+        </tr>
+    {% endif %}
+    {% endblock true_value %}
     <tr>
         {% if not auction.is_ended %}
             <th>End time:</th>
-            <td>{{ auction.get_current_end_time|timeuntil }}<br>({{ auction.get_current_end_time }})</td>
+            <td>{{ auction.get_end_time|timeuntil }}<br>({{ auction.get_end_time }})</td>
         {% else %}
             <th>End time:</th>
-            <td>Auction has ended<br>({{ auction.get_current_end_time }})</td>
+            <td>Auction has ended<br>({{ auction.get_end_time }})</td>
         {% endif %}
     </tr>
     <tr>
@@ -82,25 +118,12 @@ Auction for Asset {{ auction.asset.name }}: Confirm Bid
         <td>{% now "Y-m-d H:i:s" %}</td>
     </tr>
     <tr>
-        {% if not auction.is_ended %}
-            <th>Max end time extension:</th>
-            <td>{{ auction.get_max_end_time|timeuntil }}<br>({{ auction.get_max_end_time }})</td>
-        {% else %}
-            <th>Max end time extension:</th>
-            <td>Auction has ended</td>
-        {% endif %}
-    </tr>
-    <tr>
         <th>Bid history:</th>
-        <td><a href="bid_history/">{{ auction.bid_set.count }} bids</a></td>
+        <td><a href="{{ auction.get_absolute_url }}bid_history/">{{ auction.bid_set.count }} bids</a></td>
     </tr>
     <tr>
         <th>Start time:</th>
         <td>{{ auction.get_start_time }}</a></td>
-    </tr>
-        <tr>
-        <th>Starting bid:</th>
-        <td>{{ auction.starting_bid|floatformat:2 }}</a></td>
     </tr>
 </table>
 

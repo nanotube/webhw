@@ -29,16 +29,14 @@ Bid History for Auction for Asset {{ auction.asset.name }}
 <h2>Bid History for Auction for Asset <span class="name">{{ auction.asset.name }}</span></h2>
 
 <ul>
-    <li>Bidders: {% expr auction.bid_set.values('bidder').distinct().count() %}</li>
     <li>Bids: {{ auction.bid_set.count }}</li>
-    <li>Current price: {{ auction.current_price|floatformat:2 }}</li>
     <li>Time left: 
         {% if not auction.is_ended %}
             {{ auction.get_current_end_time|timeuntil }}
         {% else %}
             Auction has ended.
         {% endif %}
-        </li>
+    </li>
 </ul>
 
 <table class="site">
@@ -47,54 +45,48 @@ Bid History for Auction for Asset {{ auction.asset.name }}
         <th>Bid amount</th>
         <th>Bid time</th>
     </tr>
-    
+        
+    {% for bid in auction.bid_set.all %}
     <tr>
-            <td style="color: gray;" class="left">Starting price:</td>
-            <td style="color: gray;">{{ auction.starting_bid|floatformat:2 }} </td>
-            <td style="color: gray;">{{ auction.start_time }}</td>
-    </tr>
-    
-    {% if auction.bid_set.all %}
-        {% for bid in auction.bid_set.all %}
-        <tr>
-            <td class="left">
-                {% block bidder_display %}
-                    {% ifequal user.id bid.bidder.id %}
-                        {{ bid.bidder.username }}
-                    {% else %}
-                        [hidden]
-                    {% endifequal %}
-                {% endblock bidder_display %}
-            </td>
-            <td>
-                {% block bid_amount_display %}
-                    {% ifequal user.id bid.bidder.id %}
+        <td class="left">
+            {% block bidder_display %}
+                {% ifequal user.id bid.bidder.id %}
+                    {{ bid.bidder.username }}
+                {% else %}
+                    [hidden]
+                {% endifequal %}
+            {% endblock bidder_display %}
+        </td>
+        <td>
+            {% block bid_amount_display %}
+                {% ifequal user.id bid.bidder.id %}
+                    {{ bid.amount|floatformat:2 }}
+                {% else %}
+                    {% if auction.is_ended %}
                         {{ bid.amount|floatformat:2 }}
                     {% else %}
-                        {{ bid.get_amount_display_value|floatformat:2 }}
-                        {% if bid.display_truncated %}
-                            <span style="color:red;">*</span>
-                        {% endif %}
-                    {% endifequal %}
-                {% endblock bid_amount_display %}
-            </td>
-            <td>{{ bid.time }}</td>
-        </tr>
-        {% endfor %}
+                        [hidden]
+                    {% endif %}
+                {% endifequal %}
+            {% endblock bid_amount_display %}
+        </td>
+        <td>{{ bid.time }}</td>
+    </tr>
+    {% empty %}
+    <tr>
+        <td>No bids.</td>
+        <td></td>
+        <td></td>
+    </tr>
+    {% endfor %}
         
-    {% else %}
-        <tr>
-            <td>No bids.</td>
-            <td></td>
-            <td></td>
-        </tr>
-    {% endif %}
     <tr>
         <td colspan="3" style="text-align: left;">
             <ul class="notes">
-                <li>Bids marked with '<span style="color:red;">*</span>' have been truncated at current auction price - the high bidder's <br>maximum bid is not revealed, unless it's yours.</li>
-                <li>The earlier of two bids of the same amount has priority.</li>
+                <li>Highest bidder wins auction, at price equal to second highest bid amount.</li>
+                <li>Multiple high bidders with the same bid amount share the asset evenly, at price equal to their bid amount.</li>
                 <li>Names of bidders other than you are hidden.</li>
+                <li>Bid amount are hidden until auction end.</li>
             </ul>
         </td>
     </tr>

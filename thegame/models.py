@@ -309,25 +309,6 @@ class Bid(models.Model):
     amount = models.FloatField()
     time = models.DateTimeField('Bid Time')
     
-    def get_amount_display_value(self):
-        '''Truncate bid amount to auction current price
-        
-        If bid amount is higher than auction current price (i.e. it is the high bidder's maximum bid,
-        then for display purposes the bid amount should be capped at the auction's current price
-        so as not to reveal the private maximum value of the bidder.
-        '''
-        if self.amount > self.auction.get_current_price():
-            return self.auction.get_current_price()
-        else:
-            return self.amount
-            
-    def display_truncated(self):
-        '''decide if bid amount needs to be truncated'''
-        if self.amount > self.auction.get_current_price() or self.id == self.auction.high_bid.id:
-            return True
-        else:
-            return False
-    
     def __unicode__(self):
         return u'%s: %s: %s' % (self.auction.asset.name, self.bidder.username, self.amount)
 
