@@ -53,22 +53,15 @@ Details on World: {{ world.name }}
             <td>{{ period.asset_set.count }}</td>
             <td>
             {% if period.summary_completed %}
-                {% for summary in period.periodsummary_set.all %}
-                    {% ifequal summary.user.id user.id %}
-                        {{ summary.auctions_won }}
-                    {% endifequal %}
-                {% endfor %}
+                {% expr period.periodsummary_set.get(user = user).auctions_won %}
             {% else %}
                 Period not yet complete.
             {% endif %}
             <td>{{ period.risk_free_rate|floatformat:4 }}%</td>
             <td>
             {% if period.summary_completed %}
-                {% for summary in period.periodsummary_set.all %}
-                    {% ifequal summary.user.id user.id %}
-                        <a href="{{ period.get_absolute_url }}period_results/">{{ summary.period_return|floatformat:4 }}%</a>
-                    {% endifequal %}
-                {% endfor %}
+                {% expr period.periodsummary_set.get(user = user) as usersummary %}
+                <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.period_return|floatformat:4 }}%</a>
             {% else %}
                 Period not yet complete.
             {% endif %}

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load tag_extras %}
 
 {% block title %}
 User Profile
@@ -52,22 +53,15 @@ User Profile
                         <td>{{ period.asset_set.count }}</td>
                         <td>
                         {% if period.summary_completed %}
-                            {% for summary in period.periodsummary_set.all %}
-                                {% ifequal summary.user.id user.id %}
-                                    {{ summary.auctions_won }}
-                                {% endifequal %}
-                            {% endfor %}
+                            {% expr period.periodsummary_set.get(user = user).auctions_won %}
                         {% else %}
                             Period not yet complete.
                         {% endif %}
                         <td>{{ period.risk_free_rate|floatformat:4 }}%</td>
                         <td>
                         {% if period.summary_completed %}
-                            {% for summary in period.periodsummary_set.all %}
-                                {% ifequal summary.user.id user.id %}
-                                    <a href="{{ period.get_absolute_url }}period_results/">{{ summary.period_return|floatformat:4 }}%</a>
-                                {% endifequal %}
-                            {% endfor %}
+                            {% expr period.periodsummary_set.get(user = user) as usersummary %}
+                            <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.period_return|floatformat:4 }}%</a>
                         {% else %}
                             Period not yet complete.
                         {% endif %}
@@ -77,11 +71,8 @@ User Profile
             <ul class="notes">
                 <li>
                     Your current wealth in this world: 
-                    {% for membership in user.get_profile.membership_set.all %}
-                        {% ifequal membership.world.id world.id %}
-                            {{ membership.wealth|floatformat:2 }}
-                        {% endifequal %}
-                    {% endfor %}
+                    {% expr user.get_profile().membership_set.get(world = world).wealth as world_wealth %}
+                    {{ world_wealth|floatformat:2 }}
                 </li>
                 <li>Number of users in world: {{ world.membership_set.count }}</li>
                 <li>Number of periods in world: {{ world.period_set.count }}</li>
