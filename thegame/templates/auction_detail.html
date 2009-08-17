@@ -22,6 +22,8 @@ Auction for Asset {{ auction.asset.name }}
 {% block content %}
 {% expr auction.asset.period.world.user_is_master(user) as user_is_master %}
 
+{% expr auction.did_user_bid(user) as user_bid %}
+
 {% if user_is_master %}
     <div class="change_view">
         {% block change_view %}
@@ -44,26 +46,34 @@ Auction for Asset {{ auction.asset.name }}
 <table id="auction_detail">
     <caption>Auction Details</caption>
     <tr>
-        {% ifequal auction.bid_set.count 0 %}
-            <th>Starting bid:</th>
-            <td>{{ auction.starting_bid|floatformat:2 }}</td>
-        {% else %}
-            <th>Current bid:</th>
-            <td>{{ auction.current_price|floatformat:2 }}</td>
-        {% endifequal %}
+        <th>Your bid status:</th>
+        <td>
+            {% if user_bid %}
+                You have bid on this auction.<br>
+                Your current bid is {{ user_bid.amount }}.
+            {% else %}
+                You have not yet bid on this auction.
+            {% endif %}
+        </td>
     </tr>
+    {% if auction.is_ended %}
     <tr>
-        <th>Current high bidder:</th>
+        <th>Auction winner:</th>
         <td>
             {% block bidder_display %}
-                {% ifequal auction.high_bid.bidder.id user.id %}
-                    <span class="winner">It's You!</span>
+                {% if user_bid.winner_of %}
+                    {% ifequal auction.winning_bid_set.count 1 %}
+                        <span class="winner">{{ user.username }}</span>
+                    {% else %}
+                        <span class="winner">{{ user.username }}</span> along with {{ auction.winning_bid_set.count|full_subtract:1|floatformat:0 }} other participants.
+                    {% endifequal %}
                 {% else %}
                     <span class="loser">Not You!</span>
-                {% endifequal %}
+                {% endif %}
             {% endblock bidder_display %}
         </td>
     </tr>
+    {% endif %}
     <tr>
         {% if not auction.is_ended %}
             <th>Your maximum bid:<br>
@@ -80,7 +90,7 @@ Auction for Asset {{ auction.asset.name }}
                 {% ifequal auction.bid_set.count 0 %}
                     Not sold
                 {% else %}
-                    {{ auction.get_current_price|floatformat:2 }}
+                    {{ auction.final_price|floatformat:2 }}
                 {% endifequal %}
             </td>
         {% endif %}
@@ -96,24 +106,15 @@ Auction for Asset {{ auction.asset.name }}
     <tr>
         {% if not auction.is_ended %}
             <th>End time:</th>
-            <td>{{ auction.get_current_end_time|timeuntil }}<br>({{ auction.get_current_end_time }})</td>
+            <td>{{ auction.get_end_time|timeuntil }}<br>({{ auction.get_end_time }})</td>
         {% else %}
             <th>End time:</th>
-            <td>Auction has ended<br>({{ auction.get_current_end_time }})</td>
+            <td>Auction has ended<br>({{ auction.get_end_time }})</td>
         {% endif %}
     </tr>
     <tr>
         <th>Current time:</th>
         <td>{% now "Y-m-d H:i:s" %}</td>
-    </tr>
-    <tr>
-        {% if not auction.is_ended %}
-            <th>Max end time extension:</th>
-            <td>{{ auction.get_max_end_time|timeuntil }}<br>({{ auction.get_max_end_time }})</td>
-        {% else %}
-            <th>Max end time extension:</th>
-            <td>Auction has ended<br>({{ auction.get_max_end_time }})</td>
-        {% endif %}
     </tr>
     <tr>
         <th>Bid history:</th>
@@ -122,10 +123,6 @@ Auction for Asset {{ auction.asset.name }}
     <tr>
         <th>Start time:</th>
         <td>{{ auction.get_start_time }}</a></td>
-    </tr>
-        <tr>
-        <th>Starting bid:</th>
-        <td>{{ auction.starting_bid|floatformat:2 }}</a></td>
     </tr>
 </table>
 

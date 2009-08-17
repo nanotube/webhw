@@ -24,9 +24,16 @@ class AuctionInline(admin.StackedInline):
     model=Auction
     max_num = 1
 
-class BidInline(admin.StackedInline):
+class BidInline1(admin.StackedInline):
     model=Bid
-    extra=3
+    fk_name = 'auction'
+    extra=1
+
+class BidInline2(admin.StackedInline):
+    model=Bid
+    fk_name = 'winner_of'
+    verbose_name_plural = 'Winning Bids'
+    extra = 1
     
 class PeriodSummaryInline(admin.StackedInline):
     model=PeriodSummary
@@ -49,18 +56,27 @@ class PeriodAdmin(admin.ModelAdmin):
 class MyUserAdmin(UserAdmin):
     inlines = [UserProfileInline, ]
     list_display = UserAdmin.list_display + ('is_active',)
+    list_editable = ('email', 'first_name', 'last_name', 'is_active')
 
 class UserProfileAdmin(admin.ModelAdmin):
     inlines = [MembershipInline,]
-    list_display = ('get_username', 'description')
-    search_fields = ('user__name', 'description')
+    list_display = ('get_username', 'get_first_name', 'get_last_name',)
+    search_fields = ('user__name', 'user__first_name', 'user__last_name',)
     
     def get_username(self, obj):
         return unicode(obj.user.username)
     get_username.short_description = "User"
     
+    def get_first_name(self, obj):
+        return unicode(obj.user.first_name)
+    get_first_name.short_description = "First Name"
+    
+    def get_last_name(self, obj):
+        return unicode(obj.user.last_name)
+    get_last_name.short_description = "Last Name"
+    
 class MembershipAdmin(admin.ModelAdmin):
-    list_display = ('get_username', 'get_world', 'wealth', 'approved', )
+    list_display = ('get_username', 'get_first_name', 'get_last_name', 'get_world', 'wealth', 'approved', )
     search_fields = ('user__username', 'world__name', )
     list_filter = ('approved', )
     
@@ -71,6 +87,14 @@ class MembershipAdmin(admin.ModelAdmin):
     def get_username(self, obj):
         return unicode(obj.user.user.username)
     get_username.short_description = "User"
+    
+    def get_first_name(self, obj):
+        return unicode(obj.user.user.first_name)
+    get_first_name.short_description = "First Name"
+    
+    def get_last_name(self, obj):
+        return unicode(obj.user.user.last_name)
+    get_last_name.short_description = "Last Name"
 
 class AssetAdmin(admin.ModelAdmin):
     inlines = [AuctionInline, ]
@@ -86,8 +110,8 @@ class AssetAdmin(admin.ModelAdmin):
     get_period.short_description = "Period"
 
 class AuctionAdmin(admin.ModelAdmin):
-    inlines = [BidInline,]
-    list_display = ('get_asset_name', 'current_price', 'get_world', 'get_period')
+    inlines = [BidInline1, BidInline2,]
+    list_display = ('get_asset_name', 'final_price', 'get_world', 'get_period')
     search_fields = ('asset__name', 'asset__period__name', 'asset__period__world__name')
     
     def get_asset_name(self, obj):

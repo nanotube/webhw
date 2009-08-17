@@ -19,6 +19,8 @@ from django.contrib.auth.decorators import login_required
 from django.template import RequestContext
 from django.core.mail import send_mail
 
+from django.core.exceptions import ObjectDoesNotExist
+
 def index(request):
     #return HttpResponse("Game home page goes here")
     if request.user.is_authenticated():
@@ -72,12 +74,15 @@ def create_account(request, template_name):
         if form.is_valid():
             world = form.cleaned_data['join_world']
             
-            new_user = User(username=form.cleaned_data['username'], email=form.cleaned_data['email'],)
+            new_user = User(username=form.cleaned_data['username'], 
+                        email=form.cleaned_data['email'],
+                        first_name=form.cleaned_data['first_name'], 
+                        last_name=form.cleaned_data['last_name'],)
             new_user.set_password(form.cleaned_data['password1'])
             new_user.is_active = False
             new_user.save()
             
-            new_userprofile = UserProfile(user=new_user, description=form.cleaned_data['description'])
+            new_userprofile = UserProfile(user=new_user,)
             new_userprofile.save()
             
             new_membership = Membership(user = new_userprofile, wealth=world.initial_wealth, world = world, approved=False)
@@ -204,13 +209,13 @@ def auction_detail(request, auction_id):
     if bid_amount != round(bid_amount, 2):
         return render_to_response('auction_detail.html', {'auction':auction, 'error_message':'Fractions of a cent are not allowed.'}, context_instance=RequestContext(request))
     
-    if bid_amount < auction.minimum_bid():
-        return render_to_response('auction_detail.html', {'auction':auction, 'error_message':'Please enter a bid amount that is greater than or equal to the minimum bid.'}, context_instance=RequestContext(request))
+    #if bid_amount < auction.minimum_bid():
+        #return render_to_response('auction_detail.html', {'auction':auction, 'error_message':'Please enter a bid amount that is greater than or equal to the minimum bid.'}, context_instance=RequestContext(request))
     
-    if not auction.high_bid is None:
-        if auction.high_bid.bidder.id == request.user.id:
-            if bid_amount <= auction.high_bid.amount:
-                return render_to_response('auction_detail.html', {'auction':auction, 'error_message':'You already have a maximum bid on file for this auction that is equal to or higher than this.'}, context_instance=RequestContext(request))
+    #if not auction.high_bid is None:
+        #if auction.high_bid.bidder.id == request.user.id:
+            #if bid_amount <= auction.high_bid.amount:
+                #return render_to_response('auction_detail.html', {'auction':auction, 'error_message':'You already have a maximum bid on file for this auction that is equal to or higher than this.'}, context_instance=RequestContext(request))
     
     ## throw up a confirm-bid page
     try: 
@@ -223,50 +228,59 @@ def auction_detail(request, auction_id):
         return render_to_response('bid_confirm.html', {'auction':auction, 'error_message':'Something went wrong in the processing of your bid submission. Please try again.'}, context_instance=RequestContext(request))
     
     ## now we know input is good. let's update the database.
+    ## if user hasn't bid on this item yet, create new bid.
+    ## otherwise, update existing amount.
     
-    new_bid = Bid(auction=auction, bidder = request.user, amount = bid_amount, time = datetime.datetime.now())
-    new_bid.save()
+    try:
+        new_bid = auction.bid_set.get(bidder__id = request.user.id)
+        new_bid.amount = bid_amount
+        new_bid.time = datetime.datetime.now()
+        new_bid.save()
+        bid_message = 'Your bid on this auction has been updated.'
+    except ObjectDoesNotExist:
+        new_bid = Bid(auction=auction, bidder = request.user, amount = bid_amount, time = datetime.datetime.now())
+        new_bid.save()
+        bid_message = 'Your bid on this auction has been recorded.'
     
-    if auction.bid_set.count() == 1: # if this is our first bid, current price becomes the starting price
-        auction.current_price = auction.starting_bid
-        auction.high_bid = new_bid
-        auction.save()
-        bid_message = 'Congratulations, you are the current high bidder.'
-    else:
-        if new_bid.amount > auction.high_bid.amount:
-            email_list = None
-            if auction.high_bid.bidder.id != request.user.id:
-                auction.current_price = min(new_bid.amount, auction.high_bid.amount + auction.asset.period.world.minimum_bid_increment)
-                email_list = [auction.high_bid.bidder.email,]
+    #if auction.bid_set.count() == 1: # if this is our first bid, current price becomes bid amount less 10k (default no-contest profit)
+        #auction.current_price = new_bid.amount - 10000
+        #auction.high_bid = new_bid
+        #auction.save()
+    #else:
+        #if new_bid.amount > auction.high_bid.amount:
+            #email_list = None
+            #if auction.high_bid.bidder.id != request.user.id:
+                #auction.current_price = min(new_bid.amount, auction.high_bid.amount + auction.asset.period.world.minimum_bid_increment)
+                #email_list = [auction.high_bid.bidder.email,]
 
-            auction.high_bid = new_bid
-            auction.save()
+            #auction.high_bid = new_bid
+            #auction.save()
             
-            if not email_list is None:
-                send_mail('You have been outbid in the auction for asset ' + auction.asset.name , "This is an automatically generated email. Do not reply to this email. \n\nYou have been outbid in the auction for asset '" + auction.asset.name + "' of Period " + unicode(auction.asset.period.number) + " of World '" + auction.asset.period.world.name + "'. \n\nTo view the auction, go to http://financegame.dreamhosters.com" + auction.get_absolute_url() + "\n", settings.SERVER_EMAIL, email_list)
+            #if not email_list is None:
+                #send_mail('You have been outbid in the auction for asset ' + auction.asset.name , "This is an automatically generated email. Do not reply to this email. \n\nYou have been outbid in the auction for asset '" + auction.asset.name + "' of Period " + unicode(auction.asset.period.number) + " of World '" + auction.asset.period.world.name + "'. \n\nTo view the auction, go to http://financegame.dreamhosters.com" + auction.get_absolute_url() + "\n", settings.SERVER_EMAIL, email_list)
 
-            bid_message = 'Congratulations, you are the current high bidder.'
+            #bid_message = 'Congratulations, you are the current high bidder.'
             
-        elif new_bid.amount == auction.high_bid.amount:
-            auction.current_price = auction.high_bid.amount
-            auction.save()
-            bid_message = 'You have been outbid.'
+        #elif new_bid.amount == auction.high_bid.amount:
+            #auction.current_price = auction.high_bid.amount
+            #auction.save()
+            #bid_message = 'You have been outbid.'
             
-        elif new_bid.amount < auction.high_bid.amount:
-            auction.current_price = min(new_bid.amount + auction.asset.period.world.minimum_bid_increment, auction.high_bid.amount)
-            auction.save()
-            bid_message = 'You have been outbid.'
+        #elif new_bid.amount < auction.high_bid.amount:
+            #auction.current_price = min(new_bid.amount + auction.asset.period.world.minimum_bid_increment, auction.high_bid.amount)
+            #auction.save()
+            #bid_message = 'You have been outbid.'
     
-    ## extend the end time, since we have received a valid bid
-    auction_extend_time = datetime.timedelta(minutes=auction.asset.period.world.auction_end_time_offset_per_bid)
-    if datetime.datetime.now() + auction_extend_time > auction.get_current_end_time():
-        if datetime.datetime.now() + auction_extend_time < auction.get_max_end_time():
-            auction.end_time = datetime.datetime.now() + auction_extend_time
-        else:
-            auction.end_time = auction.get_max_end_time()
+    ### extend the end time, since we have received a valid bid
+    #auction_extend_time = datetime.timedelta(minutes=auction.asset.period.world.auction_end_time_offset_per_bid)
+    #if datetime.datetime.now() + auction_extend_time > auction.get_current_end_time():
+        #if datetime.datetime.now() + auction_extend_time < auction.get_max_end_time():
+            #auction.end_time = datetime.datetime.now() + auction_extend_time
+        #else:
+            #auction.end_time = auction.get_max_end_time()
     
-    ## don't forget to save our new auction info!
-    auction.save()
+    ### don't forget to save our new auction info!
+    #auction.save()
     
     request.user.message_set.create(message = bid_message)
     return HttpResponseRedirect(auction.get_absolute_url())

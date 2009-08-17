@@ -15,6 +15,7 @@ class World(models.Model):
     maximum_auction_end_time_offset = models.FloatField("Maximum auction end time offset, in hours", default=2.0)
     auction_end_time_offset_per_bid = models.FloatField("Auction extension per bid, in minutes", default=5.0)
     initial_wealth = models.FloatField("Initial user wealth.", default=100000.0)
+    lone_bidder_profit = models.FloatField("Default lone bidder profit", default=100000.0)
     
     @models.permalink
     def get_absolute_url(self):
@@ -69,26 +70,12 @@ class Period(models.Model):
         return ('financegame.thegame.views.period_detail', (), {'world_id':self.world.id, 'period_id':self.id})
     
     def is_started(self):
+        '''True if period is started.'''
         return self.start_time < datetime.datetime.now()
         
     def is_ended(self):
-        '''Determine if period is ended. 
-        
-        If it is now past max end time, it's ended
-        If it is now before min end time, it's not ended
-        Otherwise, check all auctions individually, and if they are all ended, period is ended.'''
-        
-        if self.end_time + datetime.timedelta(hours=self.world.maximum_auction_end_time_offset) < datetime.datetime.now():
-            return True
-        if self.end_time > datetime.datetime.now():
-            return False
-        
-        all_auctions_ended = True
-        for asset in self.asset_set.all():
-            if not asset.auction.is_ended():
-                all_auctions_ended = False
-                
-        return all_auctions_ended
+        '''True if period is ended.'''
+        return self.end_time < datetime.datetime.now()
         
     def get_period_status(self):
         if self.is_started() and not self.is_ended():
@@ -97,15 +84,7 @@ class Period(models.Model):
             return "Not started"
         elif self.is_ended():
             return "Ended"
-            
-        #~ if self.start_time < datetime.datetime.now() and datetime.datetime.now() < self.end_time + datetime.timedelta(hours=self.world.maximum_auction_end_time_offset):
-            #~ status='In progress'
-        #~ elif self.start_time > datetime.datetime.now():
-            #~ status='Not started'
-        #~ elif datetime.datetime.now() > self.end_time + datetime.timedelta(hours=self.world.maximum_auction_end_time_offset):
-            #~ status='Ended'
-        #~ return status
-    
+        
     def calc_period_summary(self):
         ''' for the period, get a list of (user, period, initial wealth, final wealth, return), and create periodsummary objects
         
@@ -120,15 +99,19 @@ class Period(models.Model):
                 initial_wealth = membership.wealth
                 final_wealth = initial_wealth
                 for asset in self.asset_set.all():
-                    if asset.auction.high_bid is not None and asset.auction.high_bid.bidder.id == membership.user.user.id:
-                        final_wealth = final_wealth - asset.auction.current_price + asset.true_value
+                    try:
+                        asset.auction.winning_bid_set.get(bidder__id = membership.user.user.id)
+                        num_winners = asset.auction.winning_bid_set.count()
+                        final_wealth = final_wealth - asset.auction.final_price/num_winners + asset.true_value/num_winners
                         auctions_won = auctions_won + 1
+                    except ObjectDoesNotExist:
+                        pass # didn't win this auction.
                 
                 membership.wealth = final_wealth
                 membership.save()
                 
                 bids_placed = Bid.objects.filter(bidder = membership.user.user, auction__asset__period = self)
-                auctions_bid_on = bids_placed.values('auction').distinct().count()
+                auctions_bid_on = bids_placed.values('auction').distinct().count() # no longer needed...
                 bids_placed = bids_placed.count()
                 
                 ps = PeriodSummary(user = membership.user.user, period = self, starting_wealth = initial_wealth, ending_wealth = final_wealth, wealth_created = (final_wealth - initial_wealth), period_return = (final_wealth/initial_wealth - 1)*100.0, auctions_won = auctions_won, bids_placed = bids_placed, auctions_bid_on = auctions_bid_on)
@@ -162,13 +145,15 @@ class Period(models.Model):
                 initial_wealth = self.world.initial_wealth
                 
             final_wealth = initial_wealth
-            for asset in self.asset_set.all():
-                if asset.auction.high_bid is not None and asset.auction.high_bid.bidder.id == summary.user.id:
-                    final_wealth = final_wealth - asset.auction.current_price + asset.true_value
-                    auctions_won = auctions_won + 1
             
-            #membership.wealth = final_wealth
-            #membership.save()
+            for asset in self.asset_set.all():
+                try:
+                    asset.auction.winning_bid_set.get(bidder__id = membership.user.user.id)
+                    num_winners = asset.auction.winning_bid_set.count()
+                    final_wealth = final_wealth - asset.auction.final_price/num_winners + asset.true_value/num_winners
+                    auctions_won = auctions_won + 1
+                except ObjectDoesNotExist:
+                    pass # didn't win this auction.
             
             bids_placed = Bid.objects.filter(bidder = summary.user, auction__asset__period = self)
             auctions_bid_on = bids_placed.values('auction').distinct().count()
@@ -205,69 +190,94 @@ class Asset(models.Model):
     
 class Auction(models.Model):
     asset = models.OneToOneField(Asset)
-    current_price = models.FloatField(null=True, blank=True)
-    starting_bid = models.FloatField()
-    #start_time = models.DateTimeField('Auction Start Time')
-    #initial_end_time = models.DateTimeField('Initial Auction End Time')
-    end_time = models.DateTimeField('Current Auction End Time', null=True, blank=True)
-    max_end_time = models.DateTimeField('Auction Max End Time', null=True, blank=True)
-    high_bid = models.OneToOneField('Bid', related_name='high_bid', null=True, blank=True)
+    final_price = models.FloatField(null=True, blank=True)
+    result_completed = models.BooleanField(default=False)
+    #starting_bid = models.FloatField()
+    #high_bid = models.OneToOneField('Bid', related_name='high_bid', null=True, blank=True)
     
     @models.permalink
     def get_absolute_url(self):
         return ('financegame.thegame.views.auction_detail',(),{'auction_id':self.id})
     
     def is_ended(self):
-        return self.get_current_end_time() < datetime.datetime.now()
+        return self.asset.period.is_ended()
     
-    def minimum_bid(self):
-        if self.bid_set.count() > 0:
-            minimum_bid = self.current_price + self.asset.period.world.minimum_bid_increment
-        else:
-            minimum_bid = self.starting_bid
-        return minimum_bid
+    #def minimum_bid(self):
+        #if self.bid_set.count() > 0:
+            #minimum_bid = self.current_price + self.asset.period.world.minimum_bid_increment
+        #else:
+            #minimum_bid = self.starting_bid
+        #return minimum_bid
 
-    def get_max_end_time(self):
-        if self.max_end_time is None:
-            td = datetime.timedelta(hours=self.asset.period.world.maximum_auction_end_time_offset)
-            self.max_end_time = self.asset.period.end_time + td
-            self.save()
-        return self.max_end_time
-        #~ td = datetime.timedelta(hours=self.asset.period.world.maximum_auction_end_time_offset)
-        #~ max_end_time = self.asset.period.end_time + td
-        #~ return max_end_time
+    #def get_max_end_time(self):
+        #if self.max_end_time is None:
+            #td = datetime.timedelta(hours=self.asset.period.world.maximum_auction_end_time_offset)
+            #self.max_end_time = self.asset.period.end_time + td
+            #self.save()
+        #return self.max_end_time
+        ##~ td = datetime.timedelta(hours=self.asset.period.world.maximum_auction_end_time_offset)
+        ##~ max_end_time = self.asset.period.end_time + td
+        ##~ return max_end_time
     
-    def get_current_end_time(self):
-        #~ if self.end_time is None:
-            #~ self.end_time = self.asset.period.end_time
-            #~ self.save()
-        #~ return self.end_time
-        if self.end_time is None:
-            end_time = self.asset.period.end_time
-        else:
-            end_time = self.end_time
-        return end_time
-
+    def get_end_time(self):
+        return self.asset.period.end_time
     
     def get_start_time(self):
         return self.asset.period.start_time
     
-    def get_current_price(self):
-        if self.bid_set.count() > 0:
-            cur_price = self.current_price
+    def did_user_bid(self, user):
+        try:
+            user_bid = self.bid_set.get(bidder__id = user.id)
+            return user_bid
+        except ObjectDoesNotExist:
+            return False
+    
+    #def get_current_price(self):
+        #if self.bid_set.count() > 0:
+            #cur_price = self.current_price
+        #else:
+            #cur_price = self.starting_bid
+        #return cur_price
+    
+    def calc_result(self):
+        if not self.result_completed and self.is_ended():
+            self.result_completed = True #set the flag right away, so that we don't attempt to do this again.
+            self.save()
+            sorted_bids = self.bid_set.order_by('-amount')
+            if sorted_bids.count() >= 2:
+                if sorted_bids[0].amount > sorted_bids[1].amount:
+                    # we have one winner, simple.
+                    bid = sorted_bids[0]
+                    bid.winner_of = self
+                    bid.save()
+                    self.final_price = sorted_bids[1].amount
+                else:
+                    winning_bids = sorted_bids.filter(amount = sorted_bids[0].amount)
+                    for bid in winning_bids:
+                        bid.winner_of = self
+                        bid.save()
+                    self.final_price = sorted_bids[0].amount
+                self.save()
+            elif sorted_bids.count() == 1:
+                bid = sorted_bids[0]
+                bid.winner_of = self
+                bid.save()
+                self.final_price = sorted_bids[0].amount - self.asset.period.world.lone_bidder_profit
+                self.save()
+                
+            return ''
         else:
-            cur_price = self.starting_bid
-        return cur_price
+            return ''
     
     def __unicode__(self):
-        return u'%s: %s' % (self.asset.name, self.current_price)
+        return u'%s: %s: %s: %s' % (self.asset.period.world.name, self.asset.period.name, self.asset.name, self.final_price)
 
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
     mastered_worlds = models.ManyToManyField(World, related_name='mastered_worlds', null=True, blank=True)
     world_memberships = models.ManyToManyField(World, related_name='member_worlds', through='Membership')
     #wealth = models.FloatField()
-    description = models.CharField(max_length=200, null=True, blank=True)
+    #description = models.CharField(max_length=200, null=True, blank=True)
     #~ def get_current_wealth(self):
         #~ self.user.membership_set.filter(
     
@@ -276,7 +286,8 @@ class UserProfile(models.Model):
         return ('financegame.thegame.views.user_profile',(),{})
 
     def __unicode__(self):
-        return u'%s' % (self.user.username)
+        return u'%s: %s, %s' % (self.user.username, self.user.last_name,
+                    self.user.first_name)
 
 class Membership(models.Model):
     user = models.ForeignKey(UserProfile)
@@ -293,6 +304,7 @@ class Membership(models.Model):
 
 class Bid(models.Model):
     auction = models.ForeignKey(Auction)
+    winner_of = models.ForeignKey(Auction, related_name='winning_bid_set', null=True, blank=True)
     bidder = models.ForeignKey(User)
     amount = models.FloatField()
     time = models.DateTimeField('Bid Time')

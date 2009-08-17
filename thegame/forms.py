@@ -8,7 +8,9 @@ import re
 
 class UserCreationForm(forms.Form):
     username = forms.CharField(max_length=30)
-    description = forms.CharField(max_length=200, label="Names of team members")
+    #description = forms.CharField(max_length=200, label="Names of team members")
+    first_name = forms.CharField(max_length=30)
+    last_name = forms.CharField(max_length=30)
     email = forms.EmailField(max_length=75)
     password1 = forms.CharField(max_length=30, label="Password", widget=forms.PasswordInput)
     password2 = forms.CharField(max_length=30, label="Password (again)", widget=forms.PasswordInput)
@@ -66,13 +68,13 @@ class WorldForm(forms.ModelForm):
         exclude = ('mastered_worlds',)
         
 class AuctionForm(forms.ModelForm):
-    end_time = forms.SplitDateTimeField(widget=admin_widgets.AdminSplitDateTime, required=False, help_text="Leave this blank to let auction end at period end time.")
+    #end_time = forms.SplitDateTimeField(widget=admin_widgets.AdminSplitDateTime, required=False, help_text="Leave this blank to let auction end at period end time.")
     class Meta:
         model = Auction
-        exclude = ('asset','high_bid','current_price','max_end_time',)
+        exclude = ('asset','high_bid','current_price','final_price','max_end_time',)
     
-    class Media:
-        css = { 'all': ('/site_media/css/calendar.css',) }
+    #class Media:
+    #    css = { 'all': ('/site_media/css/calendar.css',) }
         #js = (settings.ADMIN_MEDIA_PREFIX + "js/core.js", )
 
 class AssetForm(forms.ModelForm):
@@ -85,7 +87,7 @@ class AssetForm(forms.ModelForm):
         #exclude = ('period',)
     
     def __init__(self, *args, **kwargs):
-        '''Accepts an extra argument, queryset, which sets the world selection choices.'''
+        '''Accepts an extra argument, queryset, which sets the period selection choices.'''
         try:
             queryset = kwargs['queryset']
             del kwargs['queryset']

@@ -52,6 +52,9 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
         {% endblock edit_title %}
     </tr>
     {% for asset in period.asset_set.all %}
+        {% if period.is_ended %}
+            {{ asset.auction.calc_result }}
+        {% endif %}
         <tr class="{% cycle 'even' 'odd' %}">
             <td>{{ forloop.counter }}</td>
             <td><a href="{{ asset.auction.get_absolute_url }}">{{ asset.name }}</a></td>
@@ -62,10 +65,10 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
                     {% ifequal asset.auction.bid_set.count 0 %}
                         Not sold
                     {% else %}
-                        Sold: {{ asset.auction.get_current_price|floatformat:2 }}
+                        Sold: {{ asset.auction.final_price|floatformat:2 }}
                     {% endifequal %}
                 {% else %}
-                    {{ asset.auction.get_current_price|floatformat:2 }}
+                    In progress
                 {% endif %}
             </td>
             <td>
@@ -77,6 +80,7 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
             </td>
             <td>
                 {% block high_bidder_display %}
+                    <!--todo: use the winner_of_set to find winners
                     {% ifnotequal asset.auction.bid_set.count 0 %}
                         {% ifequal asset.auction.high_bid.bidder.id user.id %}
                             <span class="winner">It's You!</span>
@@ -86,9 +90,10 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
                     {% else %}
                         No bids
                     {% endifnotequal %}
+                    -->
                 {% endblock high_bidder_display %}
             </td>
-            <td>{{ asset.auction.get_current_end_time|timeuntil }} ({{ asset.auction.get_current_end_time }})</td>
+            <td>{{ asset.auction.get_end_time|timeuntil }} ({{ asset.auction.get_end_time }})</td>
             {% block true_value %}
             {% endblock true_value %}
             {% block edit_link %}
