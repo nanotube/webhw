@@ -16,6 +16,7 @@ class World(models.Model):
     auction_end_time_offset_per_bid = models.FloatField("Auction extension per bid, in minutes", default=5.0)
     initial_wealth = models.FloatField("Initial user wealth.", default=100000.0)
     lone_bidder_profit = models.FloatField("Default lone bidder profit", default=100000.0)
+    default_nobid_error = models.FloatField("Default no-bid error", default=100000.0)
     
     @models.permalink
     def get_absolute_url(self):
@@ -41,15 +42,9 @@ class PeriodSummary(models.Model):
     period_return = models.FloatField()
     auctions_won = models.IntegerField(default=0)
     bids_placed = models.IntegerField(default=0)
-    auctions_bid_on = models.IntegerField(default=0)
-    
-    #~ def wealth_created(self):
-        #~ try:
-            #~ wealth_created = self.ending_wealth - self.starting_wealth
-        #~ except TypeError:
-            #~ wealth_created = None
-        #~ return wealth_created
-    
+    #auctions_bid_on = models.IntegerField(default=0)
+    mean_absolute_error = models.FloatField()
+        
     def __unicode__(self):
         return u'%s: %s: %s' % (self.user.username, self.period.number, self.period_return)
 
@@ -98,6 +93,7 @@ class Period(models.Model):
                 auctions_won = 0
                 initial_wealth = membership.wealth
                 final_wealth = initial_wealth
+                error_list = []
                 for asset in self.asset_set.all():
                     try:
                         asset.auction.winning_bid_set.get(bidder__id = membership.user.user.id)
@@ -106,15 +102,19 @@ class Period(models.Model):
                         auctions_won = auctions_won + 1
                     except ObjectDoesNotExist:
                         pass # didn't win this auction.
+                        
+                    try:
+                        bid = asset.auction.bid_set.get(bidder__id = membership.user.user.id)
+                        error_list.append(abs(bid.amount - asset.true_value))
+                    except ObjectDoesNotExist:
+                        error_list.append(self.world.default_nobid_error)
                 
                 membership.wealth = final_wealth
                 membership.save()
                 
-                bids_placed = Bid.objects.filter(bidder = membership.user.user, auction__asset__period = self)
-                auctions_bid_on = bids_placed.values('auction').distinct().count() # no longer needed...
-                bids_placed = bids_placed.count()
+                bids_placed = Bid.objects.filter(bidder = membership.user.user, auction__asset__period = self).count()
                 
-                ps = PeriodSummary(user = membership.user.user, period = self, starting_wealth = initial_wealth, ending_wealth = final_wealth, wealth_created = (final_wealth - initial_wealth), period_return = (final_wealth/initial_wealth - 1)*100.0, auctions_won = auctions_won, bids_placed = bids_placed, auctions_bid_on = auctions_bid_on)
+                ps = PeriodSummary(user = membership.user.user, period = self, starting_wealth = initial_wealth, ending_wealth = final_wealth, wealth_created = (final_wealth - initial_wealth), period_return = (final_wealth/initial_wealth - 1)*100.0, auctions_won = auctions_won, bids_placed = bids_placed, mean_absolute_error = (sum(error_list)/float(len(error_list))))
                 ps.save()
             
             return ''
@@ -146,18 +146,24 @@ class Period(models.Model):
                 
             final_wealth = initial_wealth
             
+            error_list = []
+            
             for asset in self.asset_set.all():
                 try:
-                    asset.auction.winning_bid_set.get(bidder__id = membership.user.user.id)
+                    asset.auction.winning_bid_set.get(bidder__id = summary.user.id)
                     num_winners = asset.auction.winning_bid_set.count()
                     final_wealth = final_wealth - asset.auction.final_price/num_winners + asset.true_value/num_winners
                     auctions_won = auctions_won + 1
                 except ObjectDoesNotExist:
                     pass # didn't win this auction.
+                    
+                try:
+                    bid = asset.auction.bid_set.get(bidder__id = summary.user.id)
+                    error_list.append(abs(bid.amount - asset.true_value))
+                except ObjectDoesNotExist:
+                    error_list.append(self.world.default_nobid_error)
             
-            bids_placed = Bid.objects.filter(bidder = summary.user, auction__asset__period = self)
-            auctions_bid_on = bids_placed.values('auction').distinct().count()
-            bids_placed = bids_placed.count()
+            bids_placed = Bid.objects.filter(bidder = summary.user, auction__asset__period = self).count()
             
             summary.starting_wealth = initial_wealth
             summary.ending_wealth = final_wealth
@@ -165,7 +171,7 @@ class Period(models.Model):
             summary.period_return = (final_wealth/initial_wealth - 1)*100.0
             summary.auctions_won = auctions_won
             summary.bids_placed = bids_placed
-            summary.auctions_bid_on = auctions_bid_on
+            summary.mean_absolute_error = sum(error_list)/float(len(error_list))
             
             summary.save()
             
