@@ -15,30 +15,30 @@ Help
 
 <h3>Auction mechanics</h3>
 
-<p class="text">The auction mechanism used here is similar to the classical "second-price sealed-bid auction", also known a <a href="http://en.wikipedia.org/wiki/Vickrey_auction">Vickrey auction</a>. It is also similar to the auction <a href="http://pages.ebay.com/help/buy/automatic-bidding.html">mechanism employed by eBay</a>, with the major modification of eliminating the <a href="http://en.wikipedia.org/wiki/Bid_sniping">bid sniping</a> problem.</p>
+<p class="text">The auction mechanism used here is the classical "second-price sealed-bid auction", also known a <a href="http://en.wikipedia.org/wiki/Vickrey_auction">Vickrey auction</a>.</p>
 
-<p class="text">In a "true" Vickrey auction, each bidder only places one bid, the amount of which is hidden from other bidders. Then, when all the bids are compared, the highest bidder pays not his maximum bid, but the amount of the next higest bid. So, for example, if bidder A bids $100, and bidder B bids $200, bidder B wins the auction, but only pays $100 (the amount of bidder A's bid). Thus, bidder B doesn't have to worry about "overpaying" as he would in a first-price auction (where he pays the amount of his own bid, in this case, $200, and thus would want to lower his bid from his true value so it is as close to bidder A's bid as possible). Since the goal of this game is to encourage proper asset valuation, the second-price sealed-bid mechanism is used because it makes it rational for the auction participants to bid their true value, without having to worry about the valuations being used by other players.</p>
+<p class="text">In a Vickrey auction, each bidder only places one bid, the amount of which is hidden from other bidders. Then, when all the bids are compared, the highest bidder pays not his maximum bid, but the amount of the next higest bid. So, for example, if bidder A bids $100, and bidder B bids $200, bidder B wins the auction, but only pays $100 (the amount of bidder A's bid). Thus, bidder B doesn't have to worry about "overpaying" as he would in a first-price auction (where he pays the amount of his own bid, in this case, $200, and thus would want to lower his bid from his true value so it is as close to bidder A's bid as possible). Since the goal of this game is to encourage proper asset valuation, the second-price sealed-bid mechanism is used because it makes it rational for the auction participants to bid their true value, without having to worry about the valuations being used by other players.</p>
 
-<p class="text">The exact auction mechanics used in this game are different from a true Vickrey auction (only one sealed bid), in that multiple bids are allowed over the course of the auction, that the current auction price is revealed (the second highest current bid + bid increment), and than the auction is not over until at least 5 minutes have passed without the placing of a bid. These deviations from a true second-price sealed auction are taken for the following reasons:</p>
+<p class="text">The exact auction mechanics used in this game are slightly different from a canonical Vickrey auction (only one sealed bid), in that over the course of the auction, the bidder is allowed to edit his bid amount any number of times, up until auction completion. Further, the number of bids placed on the auction is available. Upon auction completion, all [anonymized] bid amount are revealed. These deviations from a canonical second-price sealed auction do not change the value-revealing properties of the auction mechanism, and are taken for the following reasons:</p>
 
-<table><tr><td>
+<table><tr><td style="text-align: left;">
 <ul>
-    <li>Student has the opportunity to reconsider his asset valuation and act on it. Specifically once a student is outbid, a double-check of the original asset valuation is a rational step.</li>
-    <li>As most students are familiar with eBay's auction mechanism, this reduces the startup costs.</li>
-    <li>It is more fun to be able to watch the progress of the auction, which would not be possible in a true sealed-bid auction.</li>
-    <li>The extension of auction time until no bids have been placed for some time interval effectively nullifies the "bid sniping" problem that is prevalent in eBay auctions. Thus, the student has no reason to delay the placing of the bid until the last moment, and instead the rational choice is to enter the bid in the amount of the student's calculation of the asset's true value at any point in the auction.</li>
+    <li>Student has the opportunity to reconsider his asset valuation. If an error is discovered, there's no penalty for fixing it, before the auction is over.</li>
+    <li>Since it is rational for everyone to bid on every asset (even negative-value assets are bid on, in the framework of assuming a liability for a price), no value-relevant information is revealed in showing number of bids, but it is a little more interesting to be able to watch the progress of the auction.</li>
+    <li>Post-auction bid revelation allows student to double-check that the auction result is correct.</li>
 </ul>
 </td></tr></table>
 
-<p class="text">The easiest way to show the auction mechanics is with an example timeline. Suppose the auction "start price" is $10, the minimum bid increment is $1, and required time interval without any bids placed for the auction to end is 5 minutes.</p>
+<p class="text">Tie resolution is accomplished by evenly dividing the asset among all tied high bidders, at the price of the tied high bid amount. This is done instead of "first come first served", in order to eliminate any benefits to speed in bidding, which would penalize those whose schedules do not permit immediate participation.</p>
 
-<table><tr><td>
+<p class="text">The easiest way to show the auction mechanics is with some examples.</p>
+
+<table><tr><td style="text-align: left;">
 <ul>
-    <li>Bidder A thinks the asset is worth $100, and places a bid in that amount. The auction current price becomes $10 (equal to starting price), and Bidder A is the current winning bidder.</li>
-    <li>Bidder B thinks the asset is worth $50, and places a bid in that amount. The auction price becomes $51 (50 + 1 [minimum bid increment]), and Bidder A is still the current winning bidder, as he's the only one willing to pay $51 for the asset.</li>
-    <li>Bidder A rechecks his valuation, and decides he's now willing to pay $150, and places a bid in that amount. Auction price stays at $51, and Bidder A is still the high bidder.</li>
-    <li>Bidder C thinks the asset is worth $150, and places a bid in that amount. The auction price becomes $150 (not $150 + 1, since no bidder is willing to pay $151), and Bidder A is still the current winning bidder, since he was first to place a bid of $150.</li>
-    <li>Bidder D thinks the asset is worth $200, and waits until the last few seconds before auction end to place his bid of $200. Auction price becomes $150 + 1, and Bidder D is the current high bidder. Auction end time extends by 5 minutes, giving other bidders time to respond to the bid if they so choose.</li>
+    <li>Asset's true value is $300. Bidder A thinks the asset is worth $100, and places a bid in that amount. Bidder B thinks the asset is worth $200, and places a bid in that amount. If there are no other bidders, and A and B do not change their bids, the asset will go to bidder B, for $100 (second highest bid). Bidder B makes a profit of $200.</li>
+    <li>Asset's true value is $300. Bidder A thinks the asset is worth $200, and places a bid in that amount. Bidder B thinks the asset is worth $200, and places a bid in that amount. If there are no other bidders, and A and B do not change their bids, we have a tie. The asset will be evenly partitioned between Bidders A and B, at a price of $200. Since the asset is worth $300, there's a total profit of $100, so each bidder makes a profit of $50.</li>
+    <li>Asset's true value is $300. Bidder A thinks the asset is worth $200, and places a bid in that amount. No other bids are placed, so Bidder A wins by default. The asset is sold to Bidder A at a discount from his bid amount; the discount is defined by the instructor.</li>
+    <li>Asset's true value is $300. Bidder A thinks the asset is worth $500, and places a bid in that amount. Bidder B thinks the asset is worth $600, and places a bid in that amount. The asset is sold to Bidder B at $500 (second highest bid), making him a loss of $200.</li>
 </ul>
 </td></tr></table>
 
@@ -51,7 +51,7 @@ Help
 <p class="text">If you spend less than your total cash assets, it is assumed that you lend out the remaining cash at the lending rate for the period. If you spend more than your total cash assets, it is assumed that you borrow the necessary funds at the borrowing rate for the period. For now, the borrowing and lending rates are the same, and equal to the period's risk-free rate. It is thus irrelevant whether you borrow or lend, since the present value of a loan is its cash amount.</p>
 
 <p class="text">For example: let's say you started out with $100, and you bought two assets in the period:</p>
-<table><tr><td>
+<table><tr><td style="text-align: left;">
 <ul>
     <li>Asset A, bought for $90, true value $100</li>
     <li>Asset B, bought for $200, true value $210</li>
@@ -59,6 +59,16 @@ Help
 </td></tr></table>
 
 <p class="text">Your end-of-period wealth is thus 100 - 90 + 100 - 200 + 210 = 120. Your return is 120/100 - 1 = 20%.</p>
+
+<h3>Grading rubric</h3>
+
+<p class="text">The grade for the period depends on your performance relative to the other students, along two metrics: wealth created, and mean absolute error.</p>
+
+<p class="text">At the end of each period, participants are listed in order of created wealth for the period. This metric is then scaled onto the standard 100-point grading scale, in a manner determined by your instructor.</p>
+
+<p class="text">Additionally, a metric of 'mean absolute error' is calculated for each participant, which is the average of the absolute differences between each asset's true value and the amount of the bid placed on that asset's auction. The mean absolute error metric is also scaled onto the standard 100-point grading scale, in a manner determined by your instructor.</p>
+
+<p class="text">The two grades will then be combined, each weighted as determined by your instructor.</p>
 
 <h3>Further questions</h3>
 

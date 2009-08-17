@@ -237,7 +237,9 @@ class Auction(models.Model):
                 bid.save()
                 self.final_price = sorted_bids[0].amount - self.asset.period.world.lone_bidder_profit
                 self.save()
-                
+            else:
+                pass # no bids, no winners
+            
             return ''
         else:
             return ''
