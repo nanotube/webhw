@@ -63,11 +63,13 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
 {% endblock true_value_title %}
 
 {% block high_bidder_display %}
-    {% ifnotequal asset.auction.bid_set.count 0 %}
-        {{ asset.auction.high_bid.bidder.username }}
-    {% else %}
-        No bids
-    {% endifnotequal %}
+    <ol>
+    {% for winning_bid in asset.auction.winning_bid_set.all %}
+        <li>{{ winning_bid.bidder.username }}: {{ winning_bid.bidder.last_name }}, {{ winning_bid.bidder.first_name }}</li>
+    {% empty %}
+        <li>No bids</li>
+    {% endfor %}
+    </ol>
 {% endblock high_bidder_display %}
 
 {% block edit_link %}

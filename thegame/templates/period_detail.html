@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load tag_extras %}
+{% load filter_extras %}
 
 {% block title %}
 Details on Period: {{ period.number }} of World: {{ world.name }}
@@ -42,7 +43,6 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
         <th>Asset Name</th>
         <th>Asset description</th>
         <th>Bids</th>
-        <th>Price</th>
         <th>Auction Status</th>
         <th>High Bidder</th>
         <th>Auction End Time</th>
@@ -59,41 +59,38 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
             <td>{{ forloop.counter }}</td>
             <td><a href="{{ asset.auction.get_absolute_url }}">{{ asset.name }}</a></td>
             <td style="text-align: left;">{% autoescape off %}{{ asset.description }}{% endautoescape %}</td>
-            <td><a href="{{ asset.auction.get_absolute_url }}bid_history/">{{ asset.auction.bid_set.count }} bids</a></td>
-            <td>
+            <td style="text-align: left;"><a href="{{ asset.auction.get_absolute_url }}bid_history/">{{ asset.auction.bid_set.count }} bids</a></td>
+            <td style="text-align: left;">
                 {% if asset.auction.is_ended %}
+                    Ended: 
                     {% ifequal asset.auction.bid_set.count 0 %}
                         Not sold
                     {% else %}
-                        Sold: {{ asset.auction.final_price|floatformat:2 }}
+                        Sold for: {{ asset.auction.final_price|floatformat:2 }}
                     {% endifequal %}
                 {% else %}
                     In progress
                 {% endif %}
             </td>
-            <td>
-                {% if asset.auction.is_ended %}
-                    Auction ended
-                {% else %}
-                    In progress
-                {% endif %}
-            </td>
-            <td>
+            <td style="text-align: left;">
                 {% block high_bidder_display %}
-                    <!--todo: use the winner_of_set to find winners
-                    {% ifnotequal asset.auction.bid_set.count 0 %}
-                        {% ifequal asset.auction.high_bid.bidder.id user.id %}
-                            <span class="winner">It's You!</span>
+                    {% expr asset.auction.did_user_bid(user) as user_bid %}
+                    {% if user_bid.winner_of %}
+                        {% ifequal asset.auction.winning_bid_set.count 1 %}
+                            <span class="winner">{{ user.username }}</span>
+                        {% else %}
+                            <span class="winner">{{ user.username }}</span> along with {{ asset.auction.winning_bid_set.count|full_subtract:1|floatformat:0 }} other participants.
+                        {% endifequal %}
+                    {% else %}
+                        {% ifequal asset.auction.bid_set.count 0 %}
+                            No bids
                         {% else %}
                             <span class="loser">Not You!</span>
                         {% endifequal %}
-                    {% else %}
-                        No bids
-                    {% endifnotequal %}
-                    -->
+                    {% endif %}
                 {% endblock high_bidder_display %}
             </td>
-            <td>{{ asset.auction.get_end_time|timeuntil }} ({{ asset.auction.get_end_time }})</td>
+            <td style="text-align: left;">{{ asset.auction.get_end_time|timeuntil }} ({{ asset.auction.get_end_time }})</td>
             {% block true_value %}
             {% endblock true_value %}
             {% block edit_link %}
