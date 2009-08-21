@@ -92,7 +92,14 @@ def create_account(request, template_name):
             email_list = []
             for master in world.mastered_worlds.all():
                 email_list.append(master.user.email)
-            send_mail('User application received for world ' + world.name, "This is an automatically generated email. Do not reply to this email. \n\nA user application for world '" + world.name + "' has been received.\n\nUsername: " + new_user.username + "\nDescription: " + new_userprofile.description +"\nEmail: " + new_user.email + "\n\nTo activate or reject this account, visit http://financegame.dreamhosters.com/", settings.SERVER_EMAIL, email_list)
+            send_mail('User application received for world ' + world.name, 
+                    "This is an automatically generated email. Do not reply to this email. \n\nA user application for world '%(world)s' has been received.\n\nUsername: %(username)s\nFirst name: %(firstname)s\nLast name: %(lastname)s\nEmail: %(email)s\n\nTo activate or reject this account, visit http://financegame.dreamhosters.com/" % \
+                    {'world':world.name, 
+                        'username':new_user.username, 
+                        'firstname': new_user.first_name, 
+                        'lastname':new_user.last_name, 
+                        'email':new_user.email}, 
+                    settings.SERVER_EMAIL, email_list)
             
             return HttpResponseRedirect('/accounts/account_created/')
     else:
