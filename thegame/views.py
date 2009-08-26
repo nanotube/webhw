@@ -131,13 +131,22 @@ def world_list(request):
 @login_required
 def world_detail(request, world_id):
     world = get_object_or_404(World, pk=world_id)
+    if not world.user_is_member(request.user):
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
+    
     return render_to_response('world_detail.html', {'world':world}, context_instance=RequestContext(request))
+        
 
 @login_required
 def period_detail(request, world_id, period_id):
     period = get_object_or_404(Period, pk=period_id)
     world = get_object_or_404(World, pk=world_id)
     
+    if not world.user_is_member(request.user):
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
+
     # if our period hasn't started yet, don't show the info.
     if not period.is_started() and not world.user_is_master(request.user):
         request.user.message_set.create(message = "Period " + unicode(period.number) + " of World " + world.name + " has not yet started.")
@@ -150,6 +159,10 @@ def period_results(request, world_id, period_id):
     period = get_object_or_404(Period, pk=period_id)
     world = get_object_or_404(World, pk=world_id)
     
+    if not world.user_is_member(request.user):
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
+    
     # if our period hasn't completed yet, don't show the info.
     if not period.is_ended():
         request.user.message_set.create(message = "Period " + unicode(period.number) + " of World " + world.name + " is not yet complete.")
@@ -161,6 +174,10 @@ def period_results(request, world_id, period_id):
 @login_required
 def bid_history(request, auction_id):
     auction = get_object_or_404(Auction, pk=auction_id)
+    
+    if not auction.asset.period.world.user_is_member(request.user):
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
     
     # if our period hasn't started yet, don't show the info.
     if not auction.asset.period.is_started() and not request.user.is_staff:
@@ -186,6 +203,10 @@ def auction_detail(request, auction_id):
         
     '''
     auction = get_object_or_404(Auction, pk=auction_id)
+    
+    if not auction.asset.period.world.user_is_member(request.user):
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
     
     # if our period hasn't started yet, don't show the info.
     if not auction.asset.period.is_started() and not request.user.is_staff:
@@ -249,6 +270,10 @@ def world_detail_master(request, world_id):
     # list users, with approve/delete/edit links, create new button
     world = get_object_or_404(World, pk=world_id)
     
+    if not world.user_is_member(request.user):
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
+    
     if not world.user_is_master(request.user):
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
         return HttpResponseRedirect(world.get_absolute_url())
@@ -273,6 +298,10 @@ def period_detail_master(request, world_id, period_id):
     period = get_object_or_404(Period, pk=period_id)
     world = get_object_or_404(World, pk=world_id)
     
+    if not world.user_is_member(request.user):
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
+    
     if not world.user_is_master(request.user):
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
         return HttpResponseRedirect(period.get_absolute_url())
@@ -295,6 +324,10 @@ def auction_detail_master(request, auction_id):
     # list bids, with delete links? or do that in bid history
     
     auction = get_object_or_404(Auction, pk=auction_id)
+    
+    if not auction.asset.period.world.user_is_member(request.user):
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
     
     if not auction.asset.period.world.user_is_master(request.user):
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
@@ -321,6 +354,11 @@ def auction_detail_master(request, auction_id):
 def bid_history_master(request, auction_id):
     # list bids, with delete and edit links
     auction = get_object_or_404(Auction, pk=auction_id)
+    
+    if not auction.asset.period.world.user_is_member(request.user):
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
+    
     if auction.asset.period.world.user_is_master(request.user):
         return render_to_response('bid_history_master.html', {'auction':auction}, context_instance=RequestContext(request))
     else:
@@ -333,6 +371,10 @@ def period_results_master(request, world_id, period_id):
     
     period = get_object_or_404(Period, pk=period_id)
     world = get_object_or_404(World, pk=world_id)
+    
+    if not world.user_is_member(request.user):
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
     
     if not world.user_is_master(request.user):
         request.user.message_set.create(message = 'You are not authorized to edit this world.')

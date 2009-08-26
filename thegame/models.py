@@ -26,6 +26,17 @@ class World(models.Model):
         except ObjectDoesNotExist:
             return False
     
+    def user_is_member(self, user):
+        '''Test if user is member of world and is approved.'''
+        try:
+            membership = user.get_profile().membership_set.get(world=self)
+            if membership.approved:
+                return True
+            else:
+                return False
+        except ObjectDoesNotExist:
+            return False
+    
     def __unicode__(self):
         return u'%s' % self.name
 

@@ -44,9 +44,14 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
         <th>Asset description</th>
         <th>Bids</th>
         <th>Auction Status</th>
-        <th>High Bidder</th>
+        {% if period.is_ended %}
+            <th>High Bidder</th>
+        {% endif %}
         <th>Auction End Time</th>
         {% block true_value_title %}
+            {% if period.is_ended %}
+                <th>True Value</th>
+            {% endif %}
         {% endblock true_value_title %}
         {% block edit_title %}
         {% endblock edit_title %}
@@ -72,6 +77,7 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
                     In progress
                 {% endif %}
             </td>
+            {% if period.is_ended %}
             <td style="text-align: left;">
                 {% block high_bidder_display %}
                     {% expr asset.auction.did_user_bid(user) as user_bid %}
@@ -90,8 +96,12 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
                     {% endif %}
                 {% endblock high_bidder_display %}
             </td>
+            {% endif %}
             <td style="text-align: left;">{{ asset.auction.get_end_time|timeuntil }} ({{ asset.auction.get_end_time }})</td>
             {% block true_value %}
+                {% if period.is_ended %}
+                    <td>{{ asset.true_value|floatformat:2 }}</td>
+                {% endif %}
             {% endblock true_value %}
             {% block edit_link %}
             {% endblock edit_link %}
