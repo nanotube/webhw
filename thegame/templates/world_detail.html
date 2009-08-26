@@ -39,7 +39,7 @@ Details on World: {{ world.name }}
         <th>Number of assets</th>
         <th>Auctions won</th>
         <th>Risk-free rate</th>
-        <th>Period excess return</th>
+        <th>Wealth created</th>
         {% block editperiodheading %}
         {% endblock editperiodheading %}
     </tr>
@@ -61,7 +61,7 @@ Details on World: {{ world.name }}
             <td>
             {% if period.summary_completed %}
                 {% expr period.periodsummary_set.get(user = user) as usersummary %}
-                <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.period_return|floatformat:4 }}%</a>
+                <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.wealth_created|floatformat:2 }}</a>
             {% else %}
                 Period not yet complete.
             {% endif %}
