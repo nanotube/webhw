@@ -17,6 +17,8 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
 {% block content %}
 {% expr world.user_is_master(user) as user_is_master %}
 
+{{ period.calc_period_summary }}
+
 {% if user_is_master %}
     <div class="change_view">
         {% block change_view %}
@@ -57,9 +59,6 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
         {% endblock edit_title %}
     </tr>
     {% for asset in period.asset_set.all %}
-        {% if period.is_ended %}
-            {{ asset.auction.calc_result }}
-        {% endif %}
         <tr class="{% cycle 'even' 'odd' %}">
             <td>{{ forloop.counter }}</td>
             <td><a href="{{ asset.auction.get_absolute_url }}">{{ asset.name }}</a></td>

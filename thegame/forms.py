@@ -117,6 +117,7 @@ class PeriodForm(forms.ModelForm):
         
     class Meta:
         model = Period
+        exclude = ('summary_completed',)
 
 class RecalculatePeriodResultsForm(forms.Form):
     #update_wealth = forms.BooleanField(help_text="If you want to update the users' current world wealth to the ending wealth of this period, check this box.", required=False)

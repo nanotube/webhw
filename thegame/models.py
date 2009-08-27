@@ -13,6 +13,8 @@ class World(models.Model):
     initial_wealth = models.FloatField("Initial user wealth.", default=100000.0)
     lone_bidder_profit = models.FloatField("Default lone bidder profit", default=100000.0)
     default_nobid_error = models.FloatField("Default no-bid error", default=100000.0)
+    grade_scale_max = models.FloatField("Grade scale maximum", default=100.0)
+    grade_scale_min = models.FloatField("Grade scale minimum", default=20.0)
     
     @models.permalink
     def get_absolute_url(self):
@@ -111,6 +113,7 @@ class Period(models.Model):
                 wealth_created = 0
                 error_list = []
                 for asset in self.asset_set.all():
+                    asset.auction.calc_result(force=force)
                     try:
                         asset.auction.winning_bid_set.get(bidder__id = membership.user.user.id)
                         num_winners = asset.auction.winning_bid_set.count()
@@ -190,11 +193,27 @@ class Auction(models.Model):
         except ObjectDoesNotExist:
             return False
         
-    def calc_result(self):
-        if not self.result_completed and self.is_ended():
+    def calc_result(self, force=False):
+        '''Process the auction result.
+        
+        A 'winning bid' is a bid which is either highest or tied for highest.
+        Set the winner_of property of all winning bids to the auction itself.
+        
+        Also set the final price of the auction according to the standard
+        second-price sealed bid auction rule.
+        
+        Currently, this is called whenever the user views an auction, and also
+        by the Period.calc_period_summary method, when that one is called.
+        '''
+        if (not self.result_completed or force) and (self.is_ended()):
             self.result_completed = True #set the flag right away, so that we don't attempt to do this again.
             self.save()
             sorted_bids = self.bid_set.order_by('-amount')
+            
+            for bid in sorted_bids:
+                bid.winner_of = None
+                bid.save()
+            
             if sorted_bids.count() >= 2:
                 if sorted_bids[0].amount > sorted_bids[1].amount:
                     # we have one winner, simple.

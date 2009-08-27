@@ -42,9 +42,7 @@ User Profile
                     <th>Wealth created</th>
                 </tr>
                 {% for period in world.period_set.all %}
-                    {% if period.is_ended %}
-                        {{ period.calc_period_summary }}
-                    {% endif %}
+                    {{ period.calc_period_summary }}
                     <tr class="{% cycle 'even' 'odd' %}">
                         <td class="left"><a href="{{ period.get_absolute_url }}" class="detail">{{ period.number }}: {{ period.name }}</a></td>
                         <td>{{ period.get_period_status }}</td>
@@ -57,7 +55,7 @@ User Profile
                         {% endif %}
                         <td>{{ period.risk_free_rate|floatformat:4 }}%</td>
                         <td>
-                        {% if period.summary_completed %}
+                        {% if period.is_ended and period.summary_completed %}
                             {% expr period.periodsummary_set.get(user = user) as usersummary %}
                             <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.wealth_created|floatformat:2 }}</a>
                         {% else %}
