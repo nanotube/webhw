@@ -105,7 +105,7 @@ World Master of World: {{ world.name }}
                 {{ form.approved }}
             </td>
             <td>
-                <a href="{{ membership.user.get_absolute_url }}eject/" class="deletelink">Delete</a>
+                {{ form.DELETE }}
             </td>
         </tr>
     {% endfor %}

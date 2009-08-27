@@ -313,7 +313,13 @@ def world_detail_master_users(request, world_id):
         formset = MembershipFormSet(request.POST, 
                 queryset = Membership.objects.filter(world = world).order_by('user__user__username'))
         if formset.is_valid():
-            formset.save()
+            instances = formset.save()
+            for membership in instances:
+                if membership.approved == True and membership.user.user.is_active == False:
+                    user = membership.user.user
+                    user.is_active = True
+                    user.save()
+            
             request.user.message_set.create(message = "Users edited successfully.")
             return HttpResponseRedirect(world.get_absolute_url() + 'master/')
     else:
