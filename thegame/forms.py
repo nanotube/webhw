@@ -120,7 +120,8 @@ class PeriodForm(forms.ModelForm):
         exclude = ('summary_completed',)
 
 class RecalculatePeriodResultsForm(forms.Form):
-    #update_wealth = forms.BooleanField(help_text="If you want to update the users' current world wealth to the ending wealth of this period, check this box.", required=False)
-    pass
+    recalc_auctions = forms.BooleanField(label="Recalculate auctions", 
+            help_text="Force recalculation of auction results.", 
+            required=False)
 
 MembershipFormSet = modelformset_factory(Membership, fields=('approved',), extra=0, can_delete=True)

@@ -83,7 +83,7 @@ class Period(models.Model):
         elif self.is_ended():
             return "Ended"
         
-    def calc_period_summary(self, force=False):
+    def calc_period_summary(self, force=False, recalc_auctions=False):
         '''Create periodsummary objects for each user for the period.
         
         These objects get created once the period is over, and contain some
@@ -113,7 +113,7 @@ class Period(models.Model):
                 wealth_created = 0
                 error_list = []
                 for asset in self.asset_set.all():
-                    asset.auction.calc_result(force=force)
+                    asset.auction.calc_result(force=recalc_auctions)
                     try:
                         asset.auction.winning_bid_set.get(bidder__id = membership.user.user.id)
                         num_winners = asset.auction.winning_bid_set.count()

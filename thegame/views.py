@@ -450,7 +450,8 @@ def period_results_master(request, world_id, period_id):
         form = RecalculatePeriodResultsForm(request.POST)
         if form.is_valid():
             #period.recalc_period_summary(form.cleaned_data['update_wealth'])
-            period.calc_period_summary(force=True)
+            period.calc_period_summary(force=True, 
+                    recalc_auctions = form.cleaned_data['recalc_auctions'])
             request.user.message_set.create(message = "Results recalculated.")
             return HttpResponseRedirect('.')
         else: 
