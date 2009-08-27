@@ -43,7 +43,6 @@ Results for Period {{ period.number }} of World: {{ world.name }}
         <th>Auctions won</th>
         <th>Starting wealth</th>
         <th>Ending wealth</th>
-        <th>Period excess return</th>
         <th>Wealth created</th>
         <th>Mean absolute error</th>
     </tr>
@@ -63,7 +62,6 @@ Results for Period {{ period.number }} of World: {{ world.name }}
             <td>{{ result.auctions_won }}</td>
             <td>{{ result.starting_wealth|floatformat:2 }}</td>
             <td>{{ result.ending_wealth|floatformat:2 }}</td>
-            <td>{{ result.period_return|floatformat:4 }} %</td>
             <td>{{ result.wealth_created|floatformat:2 }}</td>
             <td>{{ result.mean_absolute_error|floatformat:2 }}</td>
         </tr>
