@@ -37,10 +37,10 @@ World Master of World: {{ world.name }}
 <a href="#" onclick="Effect.toggle('edit_element_form_1', 'blind', {duration: 0.5}); return false;" class="expand">Edit world attributes</a>
 </div>
 <div class="edit_element_form" id="edit_element_form_1">
-    <form action='.' method="POST">
+    <form action='world/' method="POST">
     <table class="formtable">
     <caption>Edit world attributes</caption>
-    {{ form.as_table }}
+    {{ world_form.as_table }}
     <tr>
     <td></td>
     <td><input type="submit" value="Submit" /></td>
@@ -79,41 +79,39 @@ World Master of World: {{ world.name }}
 <a href="#" onclick="Effect.toggle('edit_element_form_3', 'blind', {duration: 0.5}); return false;" class="expand">Edit users</a>
 </div>
 <div class="edit_element_form" id="edit_element_form_3">
+    <form action='users/' method="POST">
+    {{ user_formset.management_form }}
     <table class="edit_items">
         <tr>
             <th>Username</th>
-            <th>Description</th>
-            <th>Status</th>
-            <th>[Un]Approve</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Approved</th>
             <th>Delete</th>
         </tr>
-    {% for membership in world.membership_set.all %}
+    {% for membership, form in user_formset_dict.items %}
         <tr>
             <td>
-                <a href="{{ membership.user.get_absolute_url }}{{ membership.user.user.id }}/master/" class="changelink">{{ membership.user.user.username }}</a>
+                {{ membership.user.user.username }}
             </td>
             <td>
-                {{ membership.user.description }}
+                {{ membership.user.user.first_name }}
             </td>
             <td>
-                {% if membership.approved %}
-                    <img src="/site_media/img/icon-yes.gif" alt="True">
-                {% else %}
-                    <img src="/site_media/img/icon-no.gif" alt="False">
-                {% endif %}
+                {{ membership.user.user.last_name }}
             </td>
             <td>
-                {% if membership.approved %}
-                    <a href="{{ membership.user.get_absolute_url }}reject/" class="nolink">Unapprove</a>
-                {% else %}
-                    <a href="{{ membership.user.get_absolute_url }}approve/" class="yeslink">Approve</a>
-                {% endif %}
+                {% for hid in form.hidden_fields %} {{hid}}{% endfor %}
+                {{ form.approved }}
             </td>
             <td>
                 <a href="{{ membership.user.get_absolute_url }}eject/" class="deletelink">Delete</a>
             </td>
         </tr>
     {% endfor %}
+    <tr>
+    <td colspan = "5" style="text-align: right;"><input type="submit" value="Submit" /></td>
+    </tr>
     </table>
 
     <br>

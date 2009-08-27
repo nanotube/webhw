@@ -21,12 +21,13 @@ urlpatterns = patterns('financegame.thegame.views',
     
     
     (r'^worlds/(?P<world_id>\d+)/master/$', 'world_detail_master'), # home for mastering a world
+    (r'^worlds/(?P<world_id>\d+)/master/users/$', 'world_detail_master_users'), # process user form
+    (r'^worlds/(?P<world_id>\d+)/master/world/$', 'world_detail_master_world'), # process world form
+    
     (r'^worlds/(?P<world_id>\d+)/(?P<period_id>\d+)/master/$', 'period_detail_master'), # master a period
     (r'^worlds/(?P<world_id>\d+)/(?P<period_id>\d+)/period_results/master/$', 'period_results_master'), 
     (r'^auctions/(?P<auction_id>\d+)/master/$', 'auction_detail_master'), # master an asset/auction
     (r'^auctions/(?P<auction_id>\d+)/bid_history/master/$', 'bid_history_master'), # master bid history
     
-    #~ (r'^(?P<poll_id>\d+)/$', 'detail'),
-    #~ (r'^(?P<poll_id>\d+)/results/$', 'results'),
-    #~ (r'^(?P<poll_id>\d+)/vote/$', 'vote'),
+
 )

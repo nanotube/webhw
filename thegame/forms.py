@@ -1,9 +1,10 @@
 from django import forms
+from django.forms.models import modelformset_factory
 from django.db import models
 from django.conf import settings
 from django.contrib.admin import widgets as admin_widgets
 from django.contrib.auth.models import User
-from financegame.thegame.models import World, Asset, Auction, Period
+from financegame.thegame.models import World, Asset, Auction, Period, Membership
 import re
 
 class UserCreationForm(forms.Form):
@@ -120,3 +121,5 @@ class PeriodForm(forms.ModelForm):
 class RecalculatePeriodResultsForm(forms.Form):
     #update_wealth = forms.BooleanField(help_text="If you want to update the users' current world wealth to the ending wealth of this period, check this box.", required=False)
     pass
+
+MembershipFormSet = modelformset_factory(Membership, fields=('approved',), extra=0)

@@ -8,7 +8,9 @@ from auth_views import login as generic_login
 from django.contrib.auth.views import logout as generic_logout
 
 from financegame.thegame.models import World, Period, Auction, Bid, UserProfile, Membership
-from financegame.thegame.forms import UserCreationForm, ContactForm, WorldForm, AuctionForm, AssetForm, PeriodForm, RecalculatePeriodResultsForm
+from financegame.thegame.forms import (UserCreationForm, ContactForm, 
+        WorldForm, AuctionForm, AssetForm, PeriodForm, 
+        RecalculatePeriodResultsForm, MembershipFormSet)
 from django.contrib.auth.models import User
 
 from django.conf import settings
@@ -278,17 +280,70 @@ def world_detail_master(request, world_id):
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
         return HttpResponseRedirect(world.get_absolute_url())
     
+    world_form = WorldForm(instance = world)
+    
+    # could this ever error if a user is created in the middle, thus creating
+    # an unequal number of items in formset and queryset?
+    membership_queryset = Membership.objects.filter(world = world).order_by('user__user__username')
+    user_formset = MembershipFormSet(queryset = membership_queryset)
+    user_formset_dict = dict(zip(membership_queryset, user_formset.forms))
+    
+        
+    return render_to_response('world_detail_master.html', 
+            {'world_form':world_form, 
+            'user_formset':user_formset, 
+            'user_formset_dict': user_formset_dict, 
+            'world':world}, 
+            context_instance=RequestContext(request))
+
+@login_required
+def world_detail_master_users(request, world_id):
+    '''Process the user changes and redirect to world master.'''
+    world = get_object_or_404(World, pk=world_id)
+    
+    if not world.user_is_member(request.user):
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
+    
+    if not world.user_is_master(request.user):
+        request.user.message_set.create(message = 'You are not authorized to edit this world.')
+        return HttpResponseRedirect(world.get_absolute_url())
+        
+    if request.method == 'POST':
+        formset = MembershipFormSet(request.POST, 
+                queryset = Membership.objects.filter(world = world).order_by('user__user__username'))
+        if formset.is_valid():
+            formset.save()
+            request.user.message_set.create(message = "Users edited successfully.")
+            return HttpResponseRedirect(world.get_absolute_url() + 'master/')
+    else:
+        return redirect_to(request, url=world.get_absolute_url + 'master/')
+
+@login_required
+def world_detail_master_world(request, world_id):
+    # world attributes/settings edit form, prefilled
+    # list periods, with edit/delete links, create new button
+    # list users, with approve/delete/edit links, create new button
+    world = get_object_or_404(World, pk=world_id)
+    
+    if not world.user_is_member(request.user):
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
+    
+    if not world.user_is_master(request.user):
+        request.user.message_set.create(message = 'You are not authorized to edit this world.')
+        return HttpResponseRedirect(world.get_absolute_url())
+    
     if request.method == 'POST': # If the form has been submitted...
-        form = WorldForm(request.POST, instance=world) # A form bound to the POST data
-        if form.is_valid():
-            form.save()
+        world_form = WorldForm(request.POST, instance=world) # A form bound to the POST data
+        if world_form.is_valid():
+            world_form.save()
             
             request.user.message_set.create(message = "World edited successfully.")
-            return HttpResponseRedirect('.')
+            return HttpResponseRedirect(world.get_absolute_url() + 'master/')
     else:
-        form = WorldForm(instance = world)
-        
-    return render_to_response('world_detail_master.html', {'form':form, 'world':world}, context_instance=RequestContext(request))
+        return redirect_to(request, url=world.get_absolute_url + 'master/')
+
 
 
 @login_required
