@@ -43,16 +43,13 @@ class World(models.Model):
 class PeriodSummary(models.Model):
     user = models.ForeignKey(User)
     period = models.ForeignKey('Period')
-    starting_wealth = models.FloatField()
-    ending_wealth = models.FloatField()
     wealth_created = models.FloatField()
-    period_return = models.FloatField()
     auctions_won = models.IntegerField(default=0)
     bids_placed = models.IntegerField(default=0)
     mean_absolute_error = models.FloatField()
         
     def __unicode__(self):
-        return u'%s: %s: %s' % (self.user.username, self.period.number, self.period_return)
+        return u'%s: %s: %s' % (self.user.username, self.period.number, self.wealth_created)
 
 class Period(models.Model):
     world = models.ForeignKey(World)
@@ -84,25 +81,40 @@ class Period(models.Model):
         elif self.is_ended():
             return "Ended"
         
-    def calc_period_summary(self):
-        ''' for the period, get a list of (user, period, initial wealth, final wealth, return), and create periodsummary objects
+    def calc_period_summary(self, force=False):
+        '''Create periodsummary objects for each user for the period.
         
-        we call this every time a user views profile, so it's generated if it doesn't exist, otherwise does nothing.'''
+        These objects get created once the period is over, and contain some
+        summary statistics, namely:
+        - wealth created
+        - auctions won
+        - bids placed
+        - mean absolute error
+        
+        Currently we call this every time a user views profile, or period 
+        detail, so it's generated if it doesn't exist, otherwise does nothing.
+        
+        Ideally, these should only be generated once, by a cron job or 
+        something like that. 
+        
+        If the argument 'force' is true, will recalculate summaries even if
+        one has been calculated before. This feature would be used by an admin
+        in case asset values get changed retroactively, etc.
+        '''
     
-        if not self.summary_completed and self.is_ended():
+        if (not self.summary_completed or force) and (self.is_ended()):
             self.summary_completed = True #set the flag right away, so that we don't attempt to do this again.
             self.save()
             membership_list = self.world.membership_set.all()
             for membership in membership_list:
                 auctions_won = 0
-                initial_wealth = membership.wealth
-                final_wealth = initial_wealth
+                wealth_created = 0
                 error_list = []
                 for asset in self.asset_set.all():
                     try:
                         asset.auction.winning_bid_set.get(bidder__id = membership.user.user.id)
                         num_winners = asset.auction.winning_bid_set.count()
-                        final_wealth = final_wealth - asset.auction.final_price/num_winners + asset.true_value/num_winners
+                        wealth_created = wealth_created - asset.auction.final_price/num_winners + asset.true_value/num_winners
                         auctions_won = auctions_won + 1
                     except ObjectDoesNotExist:
                         pass # didn't win this auction.
@@ -113,79 +125,34 @@ class Period(models.Model):
                     except ObjectDoesNotExist:
                         error_list.append(self.world.default_nobid_error)
                 
-                membership.wealth = final_wealth
-                membership.save()
-                
                 bids_placed = Bid.objects.filter(bidder = membership.user.user, auction__asset__period = self).count()
                 
-                ps = PeriodSummary(user = membership.user.user, period = self, starting_wealth = initial_wealth, ending_wealth = final_wealth, wealth_created = (final_wealth - initial_wealth), period_return = (final_wealth/initial_wealth - 1)*100.0, auctions_won = auctions_won, bids_placed = bids_placed, mean_absolute_error = (sum(error_list)/float(len(error_list))))
-                ps.save()
-            
-            return ''
-        else:
-            return ''
-    
-    def recalc_period_summary(self, reset_world_wealth=False):
-        ''' recalculate period summary results.
-        
-        this is to be used in case any asset values are updated after period summaries are over, etc.
-        
-        calculates returns and wealth using previous period's ending_wealth (or, for 1st period, default world starting wealth)
-        '''
-        periodsummaries = self.periodsummary_set.all()
-        if reset_world_wealth:
-            membership_list = self.world.membership_set.all()
-        if self.number > 1:
-            previousperiodsummaries = self.world.period_set.get(number=self.number -1).periodsummary_set.all()
-        else:
-            previousperiodsummaries = None
-        
-        for summary in periodsummaries:
-            auctions_won = 0
-            
-            if previousperiodsummaries:
-                initial_wealth = previousperiodsummaries.get(user = summary.user).ending_wealth
-            else:
-                initial_wealth = self.world.initial_wealth
+                mean_absolute_error = sum(error_list) / float(len(error_list))
                 
-            final_wealth = initial_wealth
-            
-            error_list = []
-            
-            for asset in self.asset_set.all():
                 try:
-                    asset.auction.winning_bid_set.get(bidder__id = summary.user.id)
-                    num_winners = asset.auction.winning_bid_set.count()
-                    final_wealth = final_wealth - asset.auction.final_price/num_winners + asset.true_value/num_winners
-                    auctions_won = auctions_won + 1
+                    ps = self.periodsummary_set.get(user = membership.user.user)
+                    ps.wealth_created = wealth_created
+                    ps.auctions_won = auctions_won
+                    ps.bids_placed = bids_placed
+                    ps.mean_absolute_error = mean_absolute_error
+                    ps.save()
                 except ObjectDoesNotExist:
-                    pass # didn't win this auction.
-                    
-                try:
-                    bid = asset.auction.bid_set.get(bidder__id = summary.user.id)
-                    error_list.append(abs(bid.amount - asset.true_value))
-                except ObjectDoesNotExist:
-                    error_list.append(self.world.default_nobid_error)
-            
-            bids_placed = Bid.objects.filter(bidder = summary.user, auction__asset__period = self).count()
-            
-            summary.starting_wealth = initial_wealth
-            summary.ending_wealth = final_wealth
-            summary.wealth_created = (final_wealth - initial_wealth)
-            summary.period_return = (final_wealth/initial_wealth - 1)*100.0
-            summary.auctions_won = auctions_won
-            summary.bids_placed = bids_placed
-            summary.mean_absolute_error = sum(error_list)/float(len(error_list))
-            
-            summary.save()
-            
-            if reset_world_wealth:
-                membership = membership_list.get(user__user = summary.user)
-                membership.wealth = final_wealth
+                    ps = PeriodSummary(user = membership.user.user, 
+                            period = self, 
+                            wealth_created = wealth_created, 
+                            auctions_won = auctions_won, 
+                            bids_placed = bids_placed, 
+                            mean_absolute_error = mean_absolute_error)
+                    ps.save()
+                
+                user_period_results = PeriodSummary.objects.filter(user=membership.user.user, period__world = self.world).values_list('wealth_created', flat=True)
+                membership.wealth = self.world.initial_wealth + sum(user_period_results)
                 membership.save()
             
-        return ''    
-    
+            return ''
+        else:
+            return ''
+        
     def __unicode__(self):
         return u'%s: %s: %s' % (self.world.name, self.number, self.name)
 

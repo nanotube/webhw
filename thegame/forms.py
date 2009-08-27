@@ -118,4 +118,5 @@ class PeriodForm(forms.ModelForm):
         model = Period
 
 class RecalculatePeriodResultsForm(forms.Form):
-    update_wealth = forms.BooleanField(help_text="If you want to update the users' current world wealth to the ending wealth of this period, check this box.", required=False)
+    #update_wealth = forms.BooleanField(help_text="If you want to update the users' current world wealth to the ending wealth of this period, check this box.", required=False)
+    pass

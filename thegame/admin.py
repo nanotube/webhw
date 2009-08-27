@@ -148,7 +148,7 @@ class BidAdmin(admin.ModelAdmin):
     get_period.short_description = "Period"
 
 class PeriodSummaryAdmin(admin.ModelAdmin):
-    list_display = ('get_username', 'get_world', 'get_period', 'period_return')
+    list_display = ('get_username', 'get_world', 'get_period', 'wealth_created')
     search_fields = ('user__username', 'period__name', 'period__world__name')
     
     def get_username(self, obj):
