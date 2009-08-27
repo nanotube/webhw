@@ -8,7 +8,6 @@ User Profile
 {% block content %}
 
 <p>Welcome, {{ user.username }}. Your last login was at {{ user.last_login }}.</p>
-<p>Your team members are: {{ user.get_profile.description }}</p>
 
 {% if mastered_worlds_list %}
 <div id="master">
