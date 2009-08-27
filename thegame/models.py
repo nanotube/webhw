@@ -60,7 +60,6 @@ class Period(models.Model):
     number = models.IntegerField()
     name = models.CharField(max_length=200)
     description = models.TextField()
-    risk_free_rate = models.FloatField()
     start_time = models.DateTimeField('Period Start Time')
     end_time = models.DateTimeField('Period End Time')
     summary_completed = models.BooleanField(default=False)

@@ -37,7 +37,6 @@ User Profile
                     <th>Period status</th>
                     <th>Number of assets</th>
                     <th>Auctions won</th>
-                    <th>Risk-free rate</th>
                     <th>Wealth created</th>
                 </tr>
                 {% for period in world.period_set.all %}
@@ -52,7 +51,6 @@ User Profile
                         {% else %}
                             Period not yet complete.
                         {% endif %}
-                        <td>{{ period.risk_free_rate|floatformat:4 }}%</td>
                         <td>
                         {% if period.is_ended and period.summary_completed %}
                             {% expr period.periodsummary_set.get(user = user) as usersummary %}

@@ -35,8 +35,6 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
 <h3>Period <span class="name">{{ period.number }}</span>: <span class="name">{{ period.name }}</span></h3>
 <p>{% autoescape off %}{{ period.description }}{% endautoescape %}</p>
 
-<p>Period <span class="name">{{ period.number }}</span> risk-free rate: {{ period.risk_free_rate|floatformat:4 }}%.</p>
-
 <h3>Period <span class="name">{{ period.number }}</span> Assets</h2>
 
 <table class="site">

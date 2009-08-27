@@ -38,7 +38,6 @@ Details on World: {{ world.name }}
         <th>Period status</th>
         <th>Number of assets</th>
         <th>Auctions won</th>
-        <th>Risk-free rate</th>
         <th>Wealth created</th>
         {% block editperiodheading %}
         {% endblock editperiodheading %}
@@ -57,7 +56,6 @@ Details on World: {{ world.name }}
             {% else %}
                 Period not yet complete.
             {% endif %}
-            <td>{{ period.risk_free_rate|floatformat:4 }}%</td>
             <td>
             {% if period.summary_completed %}
                 {% expr period.periodsummary_set.get(user = user) as usersummary %}
