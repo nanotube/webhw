@@ -54,7 +54,16 @@ Results for Period {{ period.number }} of World: {{ world.name }}
 
 {% endblock edit_element_form %}
 
+{% block grade_header %}
+    <th>Grade on Wealth</th>
+    <th>Grade on Error</th>
+{% endblock grade_header %}
 
 {% block user_display %}
     {{ result.user.username }}
 {% endblock user_display %}
+
+{% block grade_body %}
+    <td>{{ result.grade_wealth }}</td>
+    <td>{{ result.grade_error }}</td>
+{% endblock grade_body %}

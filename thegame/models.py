@@ -49,6 +49,8 @@ class PeriodSummary(models.Model):
     auctions_won = models.IntegerField(default=0)
     bids_placed = models.IntegerField(default=0)
     mean_absolute_error = models.FloatField()
+    grade_wealth = models.FloatField(null=True, blank=True)
+    grade_error = models.FloatField(null=True, blank=True)
         
     def __unicode__(self):
         return u'%s: %s: %s' % (self.user.username, self.period.number, self.wealth_created)
@@ -151,6 +153,25 @@ class Period(models.Model):
                 user_period_results = PeriodSummary.objects.filter(user=membership.user.user, period__world = self.world).values_list('wealth_created', flat=True)
                 membership.wealth = self.world.initial_wealth + sum(user_period_results)
                 membership.save()
+            
+            # now, let's calculate some grades.
+            user_list = membership_list.values_list('user__user__id', flat=True)
+            master_list = self.world.mastered_worlds.values_list('user__id', flat=True)
+            peon_list = list(set(user_list) - set(master_list))
+            period_result_list = self.periodsummary_set.filter(user__id__in=peon_list).order_by('user__id')
+            
+            if period_result_list.count() > 1:
+                stats = period_result_list.aggregate(models.Max('wealth_created'), 
+                        models.Min('wealth_created'),
+                        models.Max('mean_absolute_error'),
+                        models.Min('mean_absolute_error'))
+                for ps in period_result_list:
+                    ps.grade_wealth = self.world.grade_scale_max - (stats['wealth_created__max'] - ps.wealth_created)/(stats['wealth_created__max'] - stats['wealth_created__min']) * (self.world.grade_scale_max - self.world.grade_scale_min)
+                    ps.grade_error = self.world.grade_scale_max - (ps.mean_absolute_error - stats['mean_absolute_error__min'])/(stats['mean_absolute_error__max'] - stats['mean_absolute_error__min']) * (self.world.grade_scale_max - self.world.grade_scale_min)
+                    ps.save()
+            else:
+                pass # not enough members to calculate grade.
+                
             
             return ''
         else:

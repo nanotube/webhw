@@ -42,6 +42,8 @@ Results for Period {{ period.number }} of World: {{ world.name }}
         <th>Auctions won</th>
         <th>Wealth created</th>
         <th>Mean absolute error</th>
+        {% block grade_header %}
+        {% endblock grade_header %}
     </tr>
     {% for result in period_result_list %}
         <tr class="{% cycle 'even' 'odd' %}">
@@ -58,6 +60,8 @@ Results for Period {{ period.number }} of World: {{ world.name }}
             <td>{{ result.auctions_won }}</td>
             <td>{{ result.wealth_created|floatformat:2 }}</td>
             <td>{{ result.mean_absolute_error|floatformat:2 }}</td>
+            {% block grade_body %}
+            {% endblock grade_body %}
         </tr>
     {% endfor %}
 </table>

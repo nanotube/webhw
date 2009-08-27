@@ -121,7 +121,7 @@ class PeriodForm(forms.ModelForm):
 
 class RecalculatePeriodResultsForm(forms.Form):
     recalc_auctions = forms.BooleanField(label="Recalculate auctions", 
-            help_text="Force recalculation of auction results.", 
+            help_text="Force recalculation of auction results, as well.", 
             required=False)
 
 MembershipFormSet = modelformset_factory(Membership, fields=('approved',), extra=0, can_delete=True)
