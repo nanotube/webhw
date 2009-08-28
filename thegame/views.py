@@ -90,9 +90,8 @@ def create_account(request, template_name):
             new_membership.save()
             
             # send mail to the world admins, now that someone applied.
-            email_list = []
-            for master in world.mastered_worlds.all():
-                email_list.append(master.user.email)
+            email_list = world.membership_set.filter(is_master=True).values_list('user__user__email', flat=True)
+            email_list = list(set(email_list))
             send_mail('User application received for world %s' % (world.name,),
                     "This is an automatically generated email. Do not reply to this email. \n\nA user application for world '%(world)s' has been received.\n\nUsername: %(username)s\nFirst name: %(firstname)s\nLast name: %(lastname)s\nEmail: %(email)s\n\nTo activate or reject this account, visit http://financegame.dreamhosters.com/" % \
                     {'world':world.name, 
@@ -127,8 +126,8 @@ def user_profile_edit(request):
 
 @login_required
 def world_list(request):
-    user_world_list = request.user.get_profile().world_memberships.all()
-    return render_to_response('world_list.html', {'user_world_list':user_world_list}, context_instance=RequestContext(request))
+    user_membership_list = request.user.get_profile().membership_set.all()
+    return render_to_response('world_list.html', {'user_membership_list':user_membership_list}, context_instance=RequestContext(request))
 
 @login_required
 def world_detail(request, world_id):
@@ -372,15 +371,19 @@ def period_detail_master(request, world_id, period_id):
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
         return HttpResponseRedirect(period.get_absolute_url())
     
+    q1 = request.user.get_profile().membership_set.filter(is_master=True).values_list('world', flat=True)
+    q1 = list(set(q1))
+    q2 = World.objects.filter(id__in=q1)
+    
     if request.method == 'POST': # If the form has been submitted...
-        period_form = PeriodForm(request.POST, instance=period, queryset = request.user.get_profile().mastered_worlds.all()) # A form bound to the POST data for asset
+        period_form = PeriodForm(request.POST, instance=period, queryset = q2) # A form bound to the POST data for asset
         if period_form.is_valid():
             new_period = period_form.save()
             
             request.user.message_set.create(message = "Period edited successfully.")
             return HttpResponseRedirect('.')
     else:
-        period_form = PeriodForm(instance = period, queryset = request.user.get_profile().mastered_worlds.all())
+        period_form = PeriodForm(instance = period, queryset = q2)
     
     return render_to_response('period_detail_master.html', {'period':period, 'world':world, 'user_membership':user_membership, 'period_form':period_form}, context_instance=RequestContext(request))
 

@@ -15,8 +15,8 @@ List of World Memberships
 
 <p>List of your world memberships:</p>
 <ul>
-{% for world in user_world_list %}
-    <li><a href="{{ world.get_absolute_url }}">{{ world.name }}</a></li>
+{% for membership in user_membership_list %}
+    <li><a href="{{ membership.world.get_absolute_url }}">{{ membership.world.name }}</a></li>
 {% endfor %}
 </ul>
 

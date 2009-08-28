@@ -271,8 +271,6 @@ class Auction(models.Model):
 
 class UserProfile(models.Model):
     user = models.ForeignKey(User, unique=True)
-    mastered_worlds = models.ManyToManyField(World, related_name='mastered_worlds', null=True, blank=True)
-    world_memberships = models.ManyToManyField(World, related_name='member_worlds', through='Membership')
     
     @models.permalink
     def get_absolute_url(self):
