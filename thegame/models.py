@@ -36,7 +36,7 @@ class World(models.Model):
         try:
             membership = user.get_profile().membership_set.get(world=self)
             if membership.approved:
-                return True
+                return membership
             else:
                 return False
         except ObjectDoesNotExist:

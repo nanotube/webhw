@@ -133,19 +133,20 @@ def world_list(request):
 @login_required
 def world_detail(request, world_id):
     world = get_object_or_404(World, pk=world_id)
-    if not world.user_is_member(request.user):
+    user_membership = world.user_is_member(request.user)
+    if not user_membership:
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
-    return render_to_response('world_detail.html', {'world':world}, context_instance=RequestContext(request))
+    return render_to_response('world_detail.html', {'world':world, 'user_membership':user_membership}, context_instance=RequestContext(request))
         
-
 @login_required
 def period_detail(request, world_id, period_id):
     period = get_object_or_404(Period, pk=period_id)
     world = get_object_or_404(World, pk=world_id)
     
-    if not world.user_is_member(request.user):
+    user_membership = world.user_is_member(request.user)
+    if not user_membership:
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
 
@@ -154,14 +155,15 @@ def period_detail(request, world_id, period_id):
         request.user.message_set.create(message = "Period " + unicode(period.number) + " of World " + world.name + " has not yet started.")
         return redirect_to(request, url ='/thegame/userprofile/')
 
-    return render_to_response('period_detail.html', {'period':period, 'world':world}, context_instance=RequestContext(request))
+    return render_to_response('period_detail.html', {'period':period, 'world':world, 'user_membership':user_membership}, context_instance=RequestContext(request))
 
 @login_required
 def period_results(request, world_id, period_id):
     period = get_object_or_404(Period, pk=period_id)
     world = get_object_or_404(World, pk=world_id)
     
-    if not world.user_is_member(request.user):
+    user_membership = world.user_is_member(request.user)
+    if not user_membership:
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
@@ -171,13 +173,14 @@ def period_results(request, world_id, period_id):
         return redirect_to(request, url ='/thegame/userprofile/')
     
     period_result_list = period.periodsummary_set.all().order_by('-wealth_created')
-    return render_to_response('period_results.html', {'period':period, 'world':world, 'period_result_list':period_result_list}, context_instance=RequestContext(request))
+    return render_to_response('period_results.html', {'period':period, 'world':world, 'user_membership':user_membership, 'period_result_list':period_result_list}, context_instance=RequestContext(request))
 
 @login_required
 def bid_history(request, auction_id):
     auction = get_object_or_404(Auction, pk=auction_id)
     
-    if not auction.asset.period.world.user_is_member(request.user):
+    user_membership = auction.asset.period.world.user_is_member(request.user)
+    if not user_membership:
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
@@ -186,7 +189,7 @@ def bid_history(request, auction_id):
         request.user.message_set.create(message = "Period " + unicode(auction.asset.period.number) + " of World " + auction.asset.period.world.name + " has not yet started.")
         return redirect_to(request, url ='/thegame/userprofile/')
     else:
-        return render_to_response('bid_history.html', {'auction':auction}, context_instance=RequestContext(request))
+        return render_to_response('bid_history.html', {'auction':auction, 'user_membership':user_membership}, context_instance=RequestContext(request))
 
 @login_required
 def auction_detail(request, auction_id):
@@ -206,7 +209,8 @@ def auction_detail(request, auction_id):
     '''
     auction = get_object_or_404(Auction, pk=auction_id)
     
-    if not auction.asset.period.world.user_is_member(request.user):
+    user_membership = auction.asset.period.world.user_is_member(request.user)
+    if not user_membership:
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
@@ -217,36 +221,36 @@ def auction_detail(request, auction_id):
     
     # if no form has been submitted, display the auction.
     if not request.POST:
-        return render_to_response('auction_detail.html', {'auction':auction}, context_instance=RequestContext(request))
+        return render_to_response('auction_detail.html', {'auction':auction, 'user_membership':user_membership}, context_instance=RequestContext(request))
     
     ## test if auction is ended
     if auction.is_ended():
-        return render_to_response('auction_detail.html', {'auction':auction, 'error_message':'Auction has ended.'}, context_instance=RequestContext(request))
+        return render_to_response('auction_detail.html', {'auction':auction, 'user_membership':user_membership, 'error_message':'Auction has ended.'}, context_instance=RequestContext(request))
         
     ## test if auction is started
     if not auction.asset.period.is_started():
-        return render_to_response('auction_detail.html', {'auction':auction, 'error_message':'Auction not yet started.'}, context_instance=RequestContext(request))
+        return render_to_response('auction_detail.html', {'auction':auction, 'user_membership':user_membership, 'error_message':'Auction not yet started.'}, context_instance=RequestContext(request))
     
     ## test form input
     try:
         bid_amount = float(request.POST['bid_amount'])
     except KeyError:
-        return render_to_response('auction_detail.html', {'auction':auction, 'error_message':'You did not enter a bid.'}, context_instance=RequestContext(request))
+        return render_to_response('auction_detail.html', {'auction':auction, 'user_membership':user_membership, 'error_message':'You did not enter a bid.'}, context_instance=RequestContext(request))
     except ValueError:
-        return render_to_response('auction_detail.html', {'auction':auction, 'error_message':'Enter a numeric amount of dollars and cents.'}, context_instance=RequestContext(request))
+        return render_to_response('auction_detail.html', {'auction':auction, 'user_membership':user_membership, 'error_message':'Enter a numeric amount of dollars and cents.'}, context_instance=RequestContext(request))
 
     if bid_amount != round(bid_amount, 2):
-        return render_to_response('auction_detail.html', {'auction':auction, 'error_message':'Fractions of a cent are not allowed.'}, context_instance=RequestContext(request))
+        return render_to_response('auction_detail.html', {'auction':auction, 'user_membership':user_membership, 'error_message':'Fractions of a cent are not allowed.'}, context_instance=RequestContext(request))
         
     ## throw up a confirm-bid page
     try: 
         confirmation = request.POST['confirmation']
     except:
         request.user.message_set.create(message = 'Please confirm your bid')
-        return render_to_response('bid_confirm.html', {'auction':auction, 'bid_amount':bid_amount}, context_instance=RequestContext(request))
+        return render_to_response('bid_confirm.html', {'auction':auction, 'user_membership':user_membership, 'bid_amount':bid_amount}, context_instance=RequestContext(request))
     
     if confirmation != "True":
-        return render_to_response('bid_confirm.html', {'auction':auction, 'error_message':'Something went wrong in the processing of your bid submission. Please try again.'}, context_instance=RequestContext(request))
+        return render_to_response('bid_confirm.html', {'auction':auction, 'user_membership':user_membership, 'error_message':'Something went wrong in the processing of your bid submission. Please try again.'}, context_instance=RequestContext(request))
     
     ## now we know input is good. let's update the database.
     ## if user hasn't bid on this item yet, create new bid.
@@ -271,8 +275,8 @@ def world_detail_master(request, world_id):
     # list periods, with edit/delete links, create new button
     # list users, with approve/delete/edit links, create new button
     world = get_object_or_404(World, pk=world_id)
-    
-    if not world.user_is_member(request.user):
+    user_membership = world.user_is_member(request.user)
+    if not user_membership:
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
@@ -293,7 +297,8 @@ def world_detail_master(request, world_id):
             {'world_form':world_form, 
             'user_formset':user_formset, 
             'user_formset_dict': user_formset_dict, 
-            'world':world}, 
+            'world':world,
+            'user_membership':user_membership,}, 
             context_instance=RequestContext(request))
 
 @login_required
@@ -351,7 +356,6 @@ def world_detail_master_world(request, world_id):
         return redirect_to(request, url=world.get_absolute_url + 'master/')
 
 
-
 @login_required
 def period_detail_master(request, world_id, period_id):
     # period attributes edit form, prefilled
@@ -359,7 +363,8 @@ def period_detail_master(request, world_id, period_id):
     period = get_object_or_404(Period, pk=period_id)
     world = get_object_or_404(World, pk=world_id)
     
-    if not world.user_is_member(request.user):
+    user_membership = world.user_is_member(request.user)
+    if not user_membership:
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
@@ -377,7 +382,7 @@ def period_detail_master(request, world_id, period_id):
     else:
         period_form = PeriodForm(instance = period, queryset = request.user.get_profile().mastered_worlds.all())
     
-    return render_to_response('period_detail_master.html', {'period':period, 'world':world, 'period_form':period_form}, context_instance=RequestContext(request))
+    return render_to_response('period_detail_master.html', {'period':period, 'world':world, 'user_membership':user_membership, 'period_form':period_form}, context_instance=RequestContext(request))
 
 @login_required
 def auction_detail_master(request, auction_id):
@@ -386,7 +391,8 @@ def auction_detail_master(request, auction_id):
     
     auction = get_object_or_404(Auction, pk=auction_id)
     
-    if not auction.asset.period.world.user_is_member(request.user):
+    user_membership = auction.asset.period.world.user_is_member(request.user)
+    if not user_membership:
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
@@ -409,19 +415,20 @@ def auction_detail_master(request, auction_id):
         asset_form = AssetForm(instance = auction.asset, queryset = auction.asset.period.world.period_set.all())
         auction_form = AuctionForm(instance = auction)
 
-    return render_to_response('auction_detail_master.html', {'auction':auction, 'asset_form':asset_form, 'auction_form':auction_form}, context_instance=RequestContext(request))
+    return render_to_response('auction_detail_master.html', {'auction':auction, 'user_membership':user_membership, 'asset_form':asset_form, 'auction_form':auction_form}, context_instance=RequestContext(request))
 
 @login_required
 def bid_history_master(request, auction_id):
     # list bids, with delete and edit links
     auction = get_object_or_404(Auction, pk=auction_id)
     
-    if not auction.asset.period.world.user_is_member(request.user):
+    user_membership = auction.asset.period.world.user_is_member(request.user)
+    if not user_membership:
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
     if auction.asset.period.world.user_is_master(request.user):
-        return render_to_response('bid_history_master.html', {'auction':auction}, context_instance=RequestContext(request))
+        return render_to_response('bid_history_master.html', {'auction':auction, 'user_membership':user_membership}, context_instance=RequestContext(request))
     else:
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
         return HttpResponseRedirect(auction.get_absolute_url())
@@ -433,7 +440,8 @@ def period_results_master(request, world_id, period_id):
     period = get_object_or_404(Period, pk=period_id)
     world = get_object_or_404(World, pk=world_id)
     
-    if not world.user_is_member(request.user):
+    user_membership = world.user_is_member(request.user)
+    if not user_membership:
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
@@ -460,4 +468,4 @@ def period_results_master(request, world_id, period_id):
         form = RecalculatePeriodResultsForm()
     
     period_result_list = period.periodsummary_set.all().order_by('-wealth_created')
-    return render_to_response('period_results_master.html', {'period':period, 'world':world, 'period_result_list':period_result_list, 'form':form}, context_instance=RequestContext(request))
+    return render_to_response('period_results_master.html', {'period':period, 'world':world, 'user_membership':user_membership, 'period_result_list':period_result_list, 'form':form}, context_instance=RequestContext(request))

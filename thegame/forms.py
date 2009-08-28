@@ -124,4 +124,4 @@ class RecalculatePeriodResultsForm(forms.Form):
             help_text="Force recalculation of auction results, as well.", 
             required=False)
 
-MembershipFormSet = modelformset_factory(Membership, fields=('approved',), extra=0, can_delete=True)
+MembershipFormSet = modelformset_factory(Membership, fields=('approved','is_master'), extra=0, can_delete=True)

@@ -13,9 +13,8 @@ Details on World: {{ world.name }}
 {% endblock breadcrumbs %}
 
 {% block content %}
-{% expr world.user_is_master(user) as user_is_master %}
 
-{% if user_is_master %}
+{% if user_membership.is_master %}
     <div class="change_view">
         {% block change_view %}
             <a href="{{world.get_absolute_url}}master/" class="changelink">Master View</a>
@@ -51,19 +50,26 @@ Details on World: {{ world.name }}
             <td>{{ period.get_period_status }}</td>
             <td>{{ period.asset_set.count }}</td>
             <td>
-            {% if period.summary_completed %}
-                {% expr period.periodsummary_set.get(user = user).auctions_won %}
+            {% if period.is_ended and period.summary_completed %}
+                {% if not user_membership.is_master %}
+                    {% expr period.periodsummary_set.get(user = user).auctions_won %}
+                {% else %}
+                    --
+                {% endif %}
             {% else %}
                 Period not yet complete.
             {% endif %}
             <td>
-            {% if period.summary_completed %}
-                {% expr period.periodsummary_set.get(user = user) as usersummary %}
-                <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.wealth_created|floatformat:2 }}</a>
+            {% if period.is_ended and period.summary_completed %}
+                {% if not user_membership.is_master %}
+                    {% expr period.periodsummary_set.get(user = user) as usersummary %}
+                    <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.wealth_created|floatformat:2 }}</a>
+                {% else %}
+                    <a href="{{ period.get_absolute_url }}period_results/">[results]</a>
+                {% endif %}
             {% else %}
                 Period not yet complete.
             {% endif %}
-            </td>
             {% block editperiodlink %}
             {% endblock editperiodlink %}
         </tr>

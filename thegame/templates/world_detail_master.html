@@ -87,6 +87,7 @@ World Master of World: {{ world.name }}
             <th>First Name</th>
             <th>Last Name</th>
             <th>Approved</th>
+            <th>Master</th>
             <th>Delete</th>
         </tr>
     {% for membership, form in user_formset_dict.items %}
@@ -103,6 +104,9 @@ World Master of World: {{ world.name }}
             <td>
                 {% for hid in form.hidden_fields %} {{hid}}{% endfor %}
                 {{ form.approved }}
+            </td>
+            <td>
+                {{ form.is_master }}
             </td>
             <td>
                 {{ form.DELETE }}
