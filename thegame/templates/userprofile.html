@@ -9,7 +9,7 @@ User Profile
 
 <p>Welcome, {{ user.username }}. Your last login was at {{ user.last_login }}.</p>
 
-{% if mastered_worlds_list %}
+{% if mastered_membership_list %}
 <div id="master">
     <h3>You are the master of the following worlds:</h3>
     {% for dict in world_and_user_list %}
@@ -26,11 +26,11 @@ User Profile
 -->
 <h3>Your world memberships and statistics</h3>
 <table>
-{% for world in user_world_list %}
+{% for membership in user_membership_list %}
     <tr>
         <td  class="left">
-            <a href="{{ world.get_absolute_url }}"><h3 class="section">{{ world.name }}</h3></a>
-            <p>{% autoescape off %}{{ world.description }}{% endautoescape %}
+            <a href="{{ membership.world.get_absolute_url }}"><h3 class="section">{{ membership.world.name }}</h3></a>
+            <p>{% autoescape off %}{{ membership.world.description }}{% endautoescape %}
             <table class="site">
                 <tr>
                     <th>Period</th>
@@ -39,22 +39,30 @@ User Profile
                     <th>Auctions won</th>
                     <th>Wealth created</th>
                 </tr>
-                {% for period in world.period_set.all %}
+                {% for period in membership.world.period_set.all %}
                     {{ period.calc_period_summary }}
                     <tr class="{% cycle 'even' 'odd' %}">
                         <td class="left"><a href="{{ period.get_absolute_url }}" class="detail">{{ period.number }}: {{ period.name }}</a></td>
                         <td>{{ period.get_period_status }}</td>
                         <td>{{ period.asset_set.count }}</td>
                         <td>
-                        {% if period.summary_completed %}
-                            {% expr period.periodsummary_set.get(user = user).auctions_won %}
+                        {% if period.is_ended and period.summary_completed %}
+                            {% if not membership.is_master %}
+                                {% expr period.periodsummary_set.get(user = user).auctions_won %}
+                            {% else %}
+                                --
+                            {% endif %}
                         {% else %}
                             Period not yet complete.
                         {% endif %}
                         <td>
                         {% if period.is_ended and period.summary_completed %}
-                            {% expr period.periodsummary_set.get(user = user) as usersummary %}
-                            <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.wealth_created|floatformat:2 }}</a>
+                            {% if not membership.is_master %}
+                                {% expr period.periodsummary_set.get(user = user) as usersummary %}
+                                <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.wealth_created|floatformat:2 }}</a>
+                            {% else %}
+                                <a href="{{ period.get_absolute_url }}period_results/">[results]</a>
+                            {% endif %}
                         {% else %}
                             Period not yet complete.
                         {% endif %}
@@ -64,11 +72,10 @@ User Profile
             <ul class="notes">
                 <li>
                     Your current wealth in this world: 
-                    {% expr user.get_profile().membership_set.get(world = world).wealth as world_wealth %}
-                    {{ world_wealth|floatformat:2 }}
+                    {{ membership.wealth|floatformat:2 }}
                 </li>
-                <li>Number of users in world: {{ world.membership_set.count }}</li>
-                <li>Number of periods in world: {{ world.period_set.count }}</li>
+                <li>Number of users in world: {{ membership.world.membership_set.count }}</li>
+                <li>Number of periods in world: {{ membership.world.period_set.count }}</li>
             </ul>
         </td>
     </tr>

@@ -113,13 +113,13 @@ def account_created(request, template_name):
     
 @login_required
 def user_profile(request):
-    user_world_list = request.user.get_profile().world_memberships.all()
-    mastered_worlds_list = request.user.get_profile().mastered_worlds.all()
+    user_membership_list = request.user.get_profile().membership_set.all()
+    mastered_membership_list = user_membership_list.filter(is_master=True)
     world_and_user_list= []
-    for world in mastered_worlds_list:
-        world_and_user_list.append({'world':world, 'pending_users':world.membership_set.filter(user__user__is_active = False)})
+    for membership in mastered_membership_list:
+        world_and_user_list.append({'world':membership.world, 'pending_users':membership.world.membership_set.filter(approved = False)})
     
-    return render_to_response('userprofile.html', {'user_world_list':user_world_list, 'mastered_worlds_list':mastered_worlds_list, 'world_and_user_list':world_and_user_list}, context_instance=RequestContext(request))
+    return render_to_response('userprofile.html', {'user_membership_list':user_membership_list, 'mastered_membership_list':mastered_membership_list, 'world_and_user_list':world_and_user_list}, context_instance=RequestContext(request))
 
 @login_required
 def user_profile_edit(request):

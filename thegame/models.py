@@ -23,8 +23,11 @@ class World(models.Model):
     def user_is_master(self, user):
         '''Return true if the supplied user object is a master of this world.'''
         try:
-            self.mastered_worlds.get(user__id = user.id)
-            return True
+            membership = user.get_profile().membership_set.get(world=self)
+            if membership.is_master:
+                return True
+            else:
+                return False
         except ObjectDoesNotExist:
             return False
     
@@ -110,6 +113,8 @@ class Period(models.Model):
             self.save()
             membership_list = self.world.membership_set.all()
             for membership in membership_list:
+                if membership.is_master:
+                    continue # world masters don't get results
                 auctions_won = 0
                 wealth_created = 0
                 error_list = []
@@ -154,10 +159,10 @@ class Period(models.Model):
                 membership.save()
             
             # now, let's calculate some grades.
-            user_list = membership_list.values_list('user__user__id', flat=True)
-            master_list = self.world.mastered_worlds.values_list('user__id', flat=True)
-            peon_list = list(set(user_list) - set(master_list))
-            period_result_list = self.periodsummary_set.filter(user__id__in=peon_list).order_by('user__id')
+            #user_list = membership_list.values_list('user__user__id', flat=True)
+            #master_list = self.world.mastered_worlds.values_list('user__id', flat=True)
+            #peon_list = list(set(user_list) - set(master_list))
+            period_result_list = self.periodsummary_set.all().order_by('user__id')
             
             if period_result_list.count() > 1:
                 stats = period_result_list.aggregate(models.Max('wealth_created'), 
@@ -282,6 +287,7 @@ class Membership(models.Model):
     world = models.ForeignKey(World)
     wealth = models.FloatField()
     approved = models.BooleanField(default=False)
+    is_master = models.BooleanField(default=False)
         
     def __unicode__(self):
         return u'%s, %s' % (self.user.user.username, self.world.name)
