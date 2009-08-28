@@ -115,6 +115,8 @@ class Period(models.Model):
             for membership in membership_list:
                 if membership.is_master:
                     continue # world masters don't get results
+                if not membership.approved:
+                    continue # unapproved members don't get results, either
                 auctions_won = 0
                 wealth_created = 0
                 error_list = []
@@ -300,5 +302,3 @@ class Bid(models.Model):
     def __unicode__(self):
         return u'%s: %s: %s' % (self.auction.asset.name, self.bidder.username, self.amount)
 
-
-    
