@@ -42,6 +42,7 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
         <th>Asset Name</th>
         <th>Asset description</th>
         <th>Bids</th>
+        <th>Your bid</th>
         <th>Auction Status</th>
         {% if period.is_ended %}
             <th>High Bidder</th>
@@ -61,6 +62,14 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
             <td><a href="{{ asset.auction.get_absolute_url }}">{{ asset.name }}</a></td>
             <td style="text-align: left;">{% autoescape off %}{{ asset.description }}{% endautoescape %}</td>
             <td style="text-align: left;"><a href="{{ asset.auction.get_absolute_url }}bid_history/">{{ asset.auction.bid_set.count }} bids</a></td>
+            <td>
+                {% expr asset.auction.bid_set.filter(bidder=user) as user_bid %}
+                {% if user_bid %}
+                    {{ user_bid.0.amount|floatformat:2 }}
+                {% else %}
+                    --
+                {% endif %}
+            </td>
             <td style="text-align: left;">
                 {% if asset.auction.is_ended %}
                     Ended: 
