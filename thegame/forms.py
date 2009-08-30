@@ -64,12 +64,13 @@ class ContactForm(forms.Form):
     cc_myself = forms.BooleanField(required=False)
 
 class WorldForm(forms.ModelForm):
+    name = forms.CharField(widget=forms.TextInput(attrs={'size':'50'}))
+    description = forms.CharField(widget=forms.Textarea(attrs={'cols':'80', 'rows':'15',}))
     class Meta:
         model = World
         exclude = ('mastered_worlds',)
         
 class AuctionForm(forms.ModelForm):
-    #end_time = forms.SplitDateTimeField(widget=admin_widgets.AdminSplitDateTime, required=False, help_text="Leave this blank to let auction end at period end time.")
     class Meta:
         model = Auction
         exclude = ('asset','final_price',)
