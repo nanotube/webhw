@@ -31,7 +31,7 @@ Bid History for Auction for Asset {{ auction.asset.name }}
     <li>Bids: {{ auction.bid_set.count }}</li>
     <li>Time left: 
         {% if not auction.is_ended %}
-            {{ auction.get_current_end_time|timeuntil }}
+            {{ auction.get_end_time|timeuntil }}
         {% else %}
             Auction has ended.
         {% endif %}
@@ -85,7 +85,7 @@ Bid History for Auction for Asset {{ auction.asset.name }}
                 <li>Highest bidder wins auction, at price equal to second highest bid amount.</li>
                 <li>Multiple high bidders with the same bid amount share the asset evenly, at price equal to their bid amount.</li>
                 <li>Names of bidders other than you are hidden.</li>
-                <li>Bid amount are hidden until auction end.</li>
+                <li>Bid amounts are hidden until auction end.</li>
             </ul>
         </td>
     </tr>

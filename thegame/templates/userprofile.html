@@ -41,6 +41,7 @@ User Profile
                 </tr>
                 {% for period in membership.world.period_set.all %}
                     {{ period.calc_period_summary }}
+                    {% expr period.periodsummary_set.filter(user = user) as usersummary %}
                     <tr class="{% cycle 'even' 'odd' %}">
                         <td class="left"><a href="{{ period.get_absolute_url }}" class="detail">{{ period.number }}: {{ period.name }}</a></td>
                         <td>{{ period.get_period_status }}</td>
@@ -48,7 +49,11 @@ User Profile
                         <td>
                         {% if period.is_ended and period.summary_completed %}
                             {% if not membership.is_master %}
-                                {% expr period.periodsummary_set.get(user = user).auctions_won %}
+                                {% if usersummary %}
+                                    {{ usersummary.0.auctions_won }}
+                                {% else %}
+                                    --
+                                {% endif %}
                             {% else %}
                                 --
                             {% endif %}
@@ -58,8 +63,11 @@ User Profile
                         <td>
                         {% if period.is_ended and period.summary_completed %}
                             {% if not membership.is_master %}
-                                {% expr period.periodsummary_set.get(user = user) as usersummary %}
-                                <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.wealth_created|floatformat:2 }}</a>
+                                {% if usersummary %}
+                                    <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.0.wealth_created|floatformat:2 }}</a>
+                                {% else %}
+                                    <a href="{{ period.get_absolute_url }}period_results/">--</a>
+                                {% endif %}
                             {% else %}
                                 <a href="{{ period.get_absolute_url }}period_results/">[results]</a>
                             {% endif %}
