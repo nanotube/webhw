@@ -44,27 +44,48 @@ Help
 
 <p class="text">If you are curious to know more about auction theory, consider reading the excellent book <a href="http://www.nuff.ox.ac.uk/users/klemperer/VirtualBook/VirtualBookCoverSheet.asp">Auctions: Theory and Practice</a> by Paul Klemperer.</p>
 
-<h3>Returns calculation</h3>
+<h3>Wealth calculation</h3>
 
-<p class="text">Period returns are calculated in a straightforward way. The "true value" of the assets of the period is accrued to your account, while the "cost" of the assets (what you paid for them as a result of the auctions) is subtracted. Thus, if you paid less than the value of the assets, you would accumulate positive returns, if you paid more, negative returns. </p>
+<p class="text">Period wealth created is calculated in a straightforward way. The "true value" of the assets of the period is accrued to your account, while the "cost" of the assets (what you paid for them as a result of the auctions) is subtracted. Thus, if you paid less than the value of the assets, you would accumulate a positive profit, if you paid more, a loss, and zero change in wealth otherwise.</p>
 
-<p class="text">If you spend less than your total cash assets, it is assumed that you lend out the remaining cash at the lending rate for the period. If you spend more than your total cash assets, it is assumed that you borrow the necessary funds at the borrowing rate for the period. For now, the borrowing and lending rates are the same, and equal to the period's risk-free rate. It is thus irrelevant whether you borrow or lend, since the present value of a loan is its cash amount.</p>
+<p class="text">If you spend less than your total cash assets, it is assumed that you lend out the remaining cash at the lending rate for the period. If you spend more than your total cash assets, it is assumed that you borrow the necessary funds at the borrowing rate for the period. For now, the borrowing and lending rates are the same, and equal to the period's risk-free rate. It is thus irrelevant whether you borrow or lend, since the present value of a loan is its cash amount. In short, don't worry about running out of cash.</p>
 
-<p class="text">For example: let's say you started out with $100, and you bought two assets in the period:</p>
+<p class="text">Let us look at some examples. If you started out with $100, and you bought the following assets in the period:</p>
 <table><tr><td style="text-align: left;">
 <ul>
     <li>Asset A, bought for $90, true value $100</li>
     <li>Asset B, bought for $200, true value $210</li>
+    <li>Asset C, bought for $200, true value $190</li>
+    <li>Asset D, bought for $150, true value $150</li>
 </ul>
 </td></tr></table>
 
-<p class="text">Your end-of-period wealth is thus 100 - 90 + 100 - 200 + 210 = 120. Your return is 120/100 - 1 = 20%.</p>
+<p class="text">Your end-of-period wealth is thus 100 + (- 90 + 100) + (- 200 + 210) + (-200 + 190) + (-150 + 150) = 110. You have created $10 of wealth.</p>
+
+<p class="text">You may be wondering: since the auctions are second-price auctions, what happens if only one person bids on the auction? In that case, the sole bidder gets the asset at a discount from his bid. This discount is set by your instructor, and is visible below the period list on your user home page.</p>
+
+<h3>Mean absolute error calculation</h3>
+
+<p class="text">Your mean absolute error for a period is exactly what it sounds like - the average of the absolute differences between each asset's true value and the amount of the bid you placed on that asset's auction. Clearly, the lower the mean absolute error, the better.</p>
+
+<p class="text">Let us look at some examples. Suppose you placed the following bids in a period:</p>
+<table><tr><td style="text-align: left;">
+<ul>
+    <li>Asset A, true value $100, bid $100: your absolute error is 0.</li>
+    <li>Asset B, true value $210, bid $200: your absolute error is 10</li>
+    <li>Asset C, true value $150, bid $130: your absolute error is 20</li>
+</ul>
+</td></tr></table>
+
+<p class="text">Your mean absolute error is thus (0 + 10 + 30)/3 = 10.</p>
+
+<p class="text">What happens if you don't bid on an asset? You are assumed to make a "default" error, the amount of which is set by your instructor. This default value is visible below the period list on your user home page.</p>
 
 <h3>Grading rubric</h3>
 
 <p class="text">The grade for the period depends on your performance relative to the other students, along two metrics: wealth created, and mean absolute error.</p>
 
-<p class="text">At the end of each period, participants are listed in order of created wealth for the period. This metric is then scaled onto the standard 100-point grading scale, in a manner determined by your instructor.</p>
+<p class="text">At the end of each period, the range of created wealths is scaled onto the standard 100-point grading scale, in a manner determined by your instructor.</p>
 
 <p class="text">Additionally, a metric of 'mean absolute error' is calculated for each participant, which is the average of the absolute differences between each asset's true value and the amount of the bid placed on that asset's auction. The mean absolute error metric is also scaled onto the standard 100-point grading scale, in a manner determined by your instructor.</p>
 
