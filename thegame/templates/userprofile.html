@@ -9,28 +9,28 @@ User Profile
 
 <p>Welcome, {{ user.username }}. Your last login was at {{ user.last_login }}.</p>
 
-{% if mastered_membership_list %}
-<div id="master">
-    <h3>You are the master of the following worlds:</h3>
-    {% for dict in world_and_user_list %}
-        <p><a href="{{ dict.world.get_absolute_url }}master/">{{ dict.world.name }}</a>
-        <ul>
-            <li>Pending user applications: {{ dict.pending_users.count }}</li>
-        </ul>
-    {% endfor %}
-</div>
-{% endif %}
-
-<!--
-<a href="../worlds/"><h3>Your world memberships</h3></a>
--->
 <h3>Your world memberships and statistics</h3>
 <table>
 {% for membership in user_membership_list %}
     <tr>
         <td  class="left">
             <a href="{{ membership.world.get_absolute_url }}"><h3 class="section">{{ membership.world.name }}</h3></a>
-            <p>{% autoescape off %}{{ membership.world.description }}{% endautoescape %}
+            {% if membership.is_master %}
+                <div style="background-color: #eeeeec; border: 1px solid bbbbbb; padding: 3px;">
+                    <div class="change_view">
+                        {% block change_view %}
+                            <a href="{{membership.world.get_absolute_url}}master/" class="changelink">Master View</a>
+                        {% endblock change_view %}
+                    </div>
+                    <div>
+                        <ul style="margin: 0px; padding-left: 20px;">
+                            <li>Pending user applications: {% expr membership.world.membership_set.filter(approved = False).count() %}</li>
+                            <li>World masters: {% expr membership.world.membership_set.filter(is_master = True).count() %}</li>
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+            <p>{% autoescape off %}{{ membership.world.description }}{% endautoescape %}</p>
             <table class="site">
                 <tr>
                     <th>Period</th>
