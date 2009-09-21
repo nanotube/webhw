@@ -232,7 +232,7 @@ def auction_detail(request, auction_id):
     except KeyError:
         return render_to_response('auction_detail.html', {'auction':auction, 'user_membership':user_membership, 'error_message':'You did not enter a bid.'}, context_instance=RequestContext(request))
     except ValueError:
-        return render_to_response('auction_detail.html', {'auction':auction, 'user_membership':user_membership, 'error_message':'Enter a numeric amount of dollars and cents.'}, context_instance=RequestContext(request))
+        return render_to_response('auction_detail.html', {'auction':auction, 'user_membership':user_membership, 'error_message':'Enter a numeric value, without any extra symbols.'}, context_instance=RequestContext(request))
 
     if bid_amount != round(bid_amount, 2):
         return render_to_response('auction_detail.html', {'auction':auction, 'user_membership':user_membership, 'error_message':'Fractions of a cent are not allowed.'}, context_instance=RequestContext(request))

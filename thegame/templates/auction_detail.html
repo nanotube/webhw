@@ -78,7 +78,7 @@ Auction for Asset {{ auction.asset.name }}
     <tr>
         {% if not auction.is_ended %}
             <th>Your maximum bid:<br>
-            <span class="note">Enter {{ auction.minimum_bid|floatformat:2 }} or more.</span></th>
+            <span class="note">Format: ####.##</span></th>
             <th>
                 <form name="bid" action="." method="post">
                 <input type="text" name="bid_amount">
