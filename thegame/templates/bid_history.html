@@ -36,11 +36,18 @@ Bid History for Auction for Asset {{ auction.asset.name }}
             Auction has ended.
         {% endif %}
     </li>
+    {% block true_value_display %}
+        {% if auction.is_ended %}
+            <li>Asset true value: {{ auction.asset.true_value|floatformat:2 }}</li>
+        {% endif %}
+    {% endblock true_value_display %}
 </ul>
 
 <table class="site">
     <tr>
         <th>Bidder</th>
+        {% block first_last_title %}
+        {% endblock first_last_title %}
         <th>Bid amount</th>
         <th>Bid time</th>
     </tr>
@@ -56,6 +63,8 @@ Bid History for Auction for Asset {{ auction.asset.name }}
                 {% endifequal %}
             {% endblock bidder_display %}
         </td>
+        {% block first_last_display %}
+        {% endblock first_last_display %}
         <td>
             {% block bid_amount_display %}
                 {% ifequal user.id bid.bidder.id %}
@@ -74,22 +83,17 @@ Bid History for Auction for Asset {{ auction.asset.name }}
     {% empty %}
     <tr>
         <td>No bids.</td>
-        <td></td>
-        <td></td>
     </tr>
     {% endfor %}
         
-    <tr>
-        <td colspan="3" style="text-align: left;">
-            <ul class="notes">
-                <li>Highest bidder wins auction, at price equal to second highest bid amount.</li>
-                <li>Multiple high bidders with the same bid amount share the asset evenly, at price equal to their bid amount.</li>
-                <li>Names of bidders other than you are hidden.</li>
-                <li>Bid amounts are hidden until auction end.</li>
-            </ul>
-        </td>
-    </tr>
 </table>
+
+<ul class="notes">
+    <li>Highest bidder wins auction, at price equal to second highest bid amount.</li>
+    <li>Multiple high bidders with the same bid amount share the asset evenly, at price equal to their bid amount.</li>
+    <li>Names of bidders other than you are hidden.</li>
+    <li>Bid amounts are hidden until auction end.</li>
+</ul>
 
 <p><a href="{{ auction.get_absolute_url }}">[Back to auction]</a></p>
 

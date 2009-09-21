@@ -21,9 +21,23 @@ Bid History for Auction for Asset {{ auction.asset.name }}
     <a href="{{auction.get_absolute_url}}bid_history/" class="detail">Normal View</a>
 {% endblock change_view %}
 
+{% block true_value_display %}
+    <li>Asset true value: {{ auction.asset.true_value|floatformat:2 }}</li>
+{% endblock true_value_display %}
+
+{% block first_last_title %}
+    <th>First Name</th>
+    <th>Last Name</th>
+{% endblock first_last_title %}
+
 {% block bidder_display %}
     {{ bid.bidder.username }}
 {% endblock bidder_display %}
+
+{% block first_last_display %}
+    <td>{{ bid.bidder.first_name }}</td>
+    <td>{{ bid.bidder.last_name }}</td>
+{% endblock first_last_display %}
 
 {% block bid_amount_display %}
     {{ bid.amount|floatformat:2 }}
