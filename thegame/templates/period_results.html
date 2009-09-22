@@ -32,16 +32,18 @@ Results for Period {{ period.number }} of World: {{ world.name }}
 <h3>Period <span class="name">{{ period.number }}</span>: <span class="name">{{ period.name }}</span></h3>
 <p>{% autoescape off %}{{ period.description }}{% endautoescape %}</p>
 
-<p>Period <span class="name">{{ period.number }}</span> risk-free rate: {{ period.risk_free_rate|floatformat:4 }}%.</p>
-
 <table class="site">
     <tr>
         <th>Username</th>
+        {% block first_last_header %}
+        {% endblock first_last_header %}
         <th>Bids placed</th>
         <th>Auctions won</th>
         <th>Wealth created</th>
         <th>Mean absolute error</th>
         {% block grade_header %}
+            <th>Grade on Wealth</th>
+            <th>Grade on Error</th>
         {% endblock grade_header %}
     </tr>
     {% for result in period_result_list %}
@@ -55,11 +57,15 @@ Results for Period {{ period.number }} of World: {{ world.name }}
                     {% endifequal %}
                 {% endblock user_display %}
             </td>
+            {% block first_last_display %}
+            {% endblock first_last_display %}
             <td>{{ result.bids_placed }}</td>
             <td>{{ result.auctions_won }}</td>
             <td>{{ result.wealth_created|floatformat:2 }}</td>
             <td>{{ result.mean_absolute_error|floatformat:2 }}</td>
             {% block grade_body %}
+                <td>{{ result.grade_wealth|floatformat:4 }}</td>
+                <td>{{ result.grade_error|floatformat:4 }}</td>
             {% endblock grade_body %}
         </tr>
     {% endfor %}
@@ -68,6 +74,7 @@ Results for Period {{ period.number }} of World: {{ world.name }}
     <ul class="notes">
         <li>Names of users other than you are hidden.</li>
         <li>Default error for auctions you didn't bid on is {{ world.default_nobid_error|floatformat:2 }}.</li>
+        <li>Results are linearly rescaled onto the grade range of {{ world.grade_scale_min }}-{{ world.grade_scale_max }}.</li>
     </ul>
 </p>
 

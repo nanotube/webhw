@@ -146,7 +146,7 @@ def period_detail(request, world_id, period_id):
         return redirect_to(request, url ='/thegame/userprofile/')
 
     # if our period hasn't started yet, don't show the info.
-    if not period.is_started() and not world.user_is_master(request.user):
+    if not period.is_started() and not user_membership.is_master:
         request.user.message_set.create(message = "Period " + unicode(period.number) + " of World " + world.name + " has not yet started.")
         return redirect_to(request, url ='/thegame/userprofile/')
 
@@ -180,7 +180,7 @@ def bid_history(request, auction_id):
         return redirect_to(request, url ='/thegame/userprofile/')
     
     # if our period hasn't started yet, don't show the info.
-    if not auction.asset.period.is_started() and not request.user.is_staff:
+    if not auction.asset.period.is_started() and not user_membership.is_master:
         request.user.message_set.create(message = "Period " + unicode(auction.asset.period.number) + " of World " + auction.asset.period.world.name + " has not yet started.")
         return redirect_to(request, url ='/thegame/userprofile/')
     else:
@@ -210,7 +210,7 @@ def auction_detail(request, auction_id):
         return redirect_to(request, url ='/thegame/userprofile/')
     
     # if our period hasn't started yet, don't show the info.
-    if not auction.asset.period.is_started() and not request.user.is_staff:
+    if not auction.asset.period.is_started() and not user_membership.is_master:
         request.user.message_set.create(message = "Period " + unicode(auction.asset.period.id) + " of World " + auction.asset.period.world.name + " has not yet started.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
@@ -275,7 +275,7 @@ def world_detail_master(request, world_id):
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
-    if not world.user_is_master(request.user):
+    if not user_membership.is_master:
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
         return HttpResponseRedirect(world.get_absolute_url())
     
@@ -301,11 +301,12 @@ def world_detail_master_users(request, world_id):
     '''Process the user changes and redirect to world master.'''
     world = get_object_or_404(World, pk=world_id)
     
-    if not world.user_is_member(request.user):
+    user_membership = world.user_is_member(request.user)
+    if not user_membership:
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
-    if not world.user_is_master(request.user):
+    if not user_membership.is_master:
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
         return HttpResponseRedirect(world.get_absolute_url())
         
@@ -332,11 +333,12 @@ def world_detail_master_world(request, world_id):
     # list users, with approve/delete/edit links, create new button
     world = get_object_or_404(World, pk=world_id)
     
-    if not world.user_is_member(request.user):
+    user_membership = world.user_is_member(request.user)
+    if not user_membership:
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
-    if not world.user_is_master(request.user):
+    if not user_membership.is_master:
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
         return HttpResponseRedirect(world.get_absolute_url())
     
@@ -363,7 +365,7 @@ def period_detail_master(request, world_id, period_id):
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
-    if not world.user_is_master(request.user):
+    if not user_membership.is_master:
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
         return HttpResponseRedirect(period.get_absolute_url())
     
@@ -393,7 +395,7 @@ def auction_detail_master(request, auction_id):
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
-    if not auction.asset.period.world.user_is_master(request.user):
+    if not user_membership.is_master:
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
         return HttpResponseRedirect(auction.get_absolute_url())
     
@@ -424,7 +426,7 @@ def bid_history_master(request, auction_id):
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
-    if auction.asset.period.world.user_is_master(request.user):
+    if user_membership.is_master:
         return render_to_response('bid_history_master.html', {'auction':auction, 'user_membership':user_membership}, context_instance=RequestContext(request))
     else:
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
@@ -442,7 +444,7 @@ def period_results_master(request, world_id, period_id):
         request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
-    if not world.user_is_master(request.user):
+    if not user_membership.is_master:
         request.user.message_set.create(message = 'You are not authorized to edit this world.')
         return HttpResponseRedirect(period.get_absolute_url())
     

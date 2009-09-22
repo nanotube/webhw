@@ -112,6 +112,12 @@ class Period(models.Model):
             self.summary_completed = True #set the flag right away, so that we don't attempt to do this again.
             self.save()
             membership_list = self.world.membership_set.all()
+            
+            # recalc auctions, if required
+            if recalc_auctions:
+                for asset in self.asset_set.all():
+                    asset.auction.calc_result(force=recalc_auctions)
+                
             for membership in membership_list:
                 if membership.is_master:
                     continue # world masters don't get results
@@ -121,7 +127,6 @@ class Period(models.Model):
                 wealth_created = 0
                 error_list = []
                 for asset in self.asset_set.all():
-                    asset.auction.calc_result(force=recalc_auctions)
                     try:
                         asset.auction.winning_bid_set.get(bidder__id = membership.user.user.id)
                         num_winners = asset.auction.winning_bid_set.count()
@@ -172,8 +177,14 @@ class Period(models.Model):
                         models.Max('mean_absolute_error'),
                         models.Min('mean_absolute_error'))
                 for ps in period_result_list:
-                    ps.grade_wealth = self.world.grade_scale_max - (stats['wealth_created__max'] - ps.wealth_created)/(stats['wealth_created__max'] - stats['wealth_created__min']) * (self.world.grade_scale_max - self.world.grade_scale_min)
-                    ps.grade_error = self.world.grade_scale_max - (ps.mean_absolute_error - stats['mean_absolute_error__min'])/(stats['mean_absolute_error__max'] - stats['mean_absolute_error__min']) * (self.world.grade_scale_max - self.world.grade_scale_min)
+                    try:
+                        ps.grade_wealth = self.world.grade_scale_max - (stats['wealth_created__max'] - ps.wealth_created)/(stats['wealth_created__max'] - stats['wealth_created__min']) * (self.world.grade_scale_max - self.world.grade_scale_min)
+                    except ZeroDivisionError:
+                        ps.grade_wealth = self.world.grade_scale_max
+                    try:
+                        ps.grade_error = self.world.grade_scale_max - (ps.mean_absolute_error - stats['mean_absolute_error__min'])/(stats['mean_absolute_error__max'] - stats['mean_absolute_error__min']) * (self.world.grade_scale_max - self.world.grade_scale_min)
+                    except ZeroDivisionError:
+                        ps.grade_error = self.world.grade_scale_max
                     ps.save()
             else:
                 pass # not enough members to calculate grade.
@@ -244,11 +255,13 @@ class Auction(models.Model):
             if sorted_bids.count() >= 2:
                 if sorted_bids[0].amount > sorted_bids[1].amount:
                     # we have one winner, simple.
+                    #print self, 'more than 2 bids, one winner'
                     bid = sorted_bids[0]
                     bid.winner_of = self
                     bid.save()
                     self.final_price = sorted_bids[1].amount
                 else:
+                    #print self, 'more than 2 bids, more than one winner'
                     winning_bids = sorted_bids.filter(amount = sorted_bids[0].amount)
                     for bid in winning_bids:
                         bid.winner_of = self
@@ -256,12 +269,14 @@ class Auction(models.Model):
                     self.final_price = sorted_bids[0].amount
                 self.save()
             elif sorted_bids.count() == 1:
+                #print self, 'one bid, one winner'
                 bid = sorted_bids[0]
                 bid.winner_of = self
                 bid.save()
                 self.final_price = sorted_bids[0].amount - self.asset.period.world.lone_bidder_profit
                 self.save()
             else:
+                #print self, 'no bids, no winners'
                 pass # no bids, no winners
             
             return ''
