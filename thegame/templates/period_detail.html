@@ -32,9 +32,9 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
 <h2>Details on Period <span class="name">{{ period.number }}</span> of World <span class="name">{{ world.name }}</span></h2>
 
 <h3>Period <span class="name">{{ period.number }}</span>: <span class="name">{{ period.name }}</span></h3>
-<p>{% autoescape off %}{{ period.description }}{% endautoescape %}</p>
 <p>Start time: {{ period.start_time }}</p>
 <p>End time: {{ period.end_time }}</p>
+<div style="border: 1px solid gray; background-color: #eeeeec; padding-left: 10px;">{% autoescape off %}{{ period.description }}{% endautoescape %}</div>
 
 <h3>Period <span class="name">{{ period.number }}</span> Assets</h2>
 
