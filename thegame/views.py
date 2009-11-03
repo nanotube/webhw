@@ -167,7 +167,7 @@ def period_results(request, world_id, period_id):
         request.user.message_set.create(message = "Period " + unicode(period.number) + " of World " + world.name + " is not yet complete.")
         return redirect_to(request, url ='/thegame/userprofile/')
     
-    period_result_list = period.periodsummary_set.all().order_by('-wealth_created')
+    period_result_list = period.periodsummary_set.all().order_by('-correct_count')
     return render_to_response('period_results.html', {'period':period, 'world':world, 'user_membership':user_membership, 'period_result_list':period_result_list}, context_instance=RequestContext(request))
 
 @login_required
@@ -466,5 +466,5 @@ def period_results_master(request, world_id, period_id):
     else:
         form = RecalculatePeriodResultsForm()
     
-    period_result_list = period.periodsummary_set.all().order_by('-wealth_created')
+    period_result_list = period.periodsummary_set.all().order_by('-correct_count')
     return render_to_response('period_results_master.html', {'period':period, 'world':world, 'user_membership':user_membership, 'period_result_list':period_result_list, 'form':form}, context_instance=RequestContext(request))

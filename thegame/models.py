@@ -15,6 +15,7 @@ class World(models.Model):
     default_nobid_error = models.FloatField("Default no-bid error", default=100000.0)
     grade_scale_max = models.FloatField("Grade scale maximum", default=100.0)
     grade_scale_min = models.FloatField("Grade scale minimum", default=20.0)
+    correct_tolerance = models.FloatField("Tolerance for correct answer, percent", default=1.0)
     
     @models.permalink
     def get_absolute_url(self):
@@ -54,6 +55,7 @@ class PeriodSummary(models.Model):
     mean_absolute_error = models.FloatField()
     grade_wealth = models.FloatField(null=True, blank=True)
     grade_error = models.FloatField(null=True, blank=True)
+    correct_count = models.IntegerField(null=True, blank=True)
         
     def __unicode__(self):
         return u'%s: %s: %s' % (self.user.username, self.period.number, self.wealth_created)
@@ -126,6 +128,7 @@ class Period(models.Model):
                 auctions_won = 0
                 wealth_created = 0
                 error_list = []
+                correct_count = 0
                 for asset in self.asset_set.all():
                     try:
                         asset.auction.winning_bid_set.get(bidder__id = membership.user.user.id)
@@ -138,6 +141,8 @@ class Period(models.Model):
                     try:
                         bid = asset.auction.bid_set.get(bidder__id = membership.user.user.id)
                         error_list.append(abs(bid.amount - asset.true_value))
+                        correct_flag = (abs(bid.amount - asset.true_value) < abs(self.world.correct_tolerance / 100.0 * asset.true_value))
+                        correct_count += int(correct_flag)
                     except ObjectDoesNotExist:
                         error_list.append(self.world.default_nobid_error)
                 
@@ -151,6 +156,7 @@ class Period(models.Model):
                     ps.auctions_won = auctions_won
                     ps.bids_placed = bids_placed
                     ps.mean_absolute_error = mean_absolute_error
+                    ps.correct_count = correct_count
                     ps.save()
                 except ObjectDoesNotExist:
                     ps = PeriodSummary(user = membership.user.user, 
@@ -158,7 +164,8 @@ class Period(models.Model):
                             wealth_created = wealth_created, 
                             auctions_won = auctions_won, 
                             bids_placed = bids_placed, 
-                            mean_absolute_error = mean_absolute_error)
+                            mean_absolute_error = mean_absolute_error,
+                            correct_count = correct_count)
                     ps.save()
                 
                 user_period_results = PeriodSummary.objects.filter(user=membership.user.user, period__world = self.world).values_list('wealth_created', flat=True)
