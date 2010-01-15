@@ -10,11 +10,11 @@ import datetime
 class World(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField()
-    initial_wealth = models.FloatField("Initial user wealth.", default=100000.0)
-    lone_bidder_profit = models.FloatField("Default lone bidder profit", default=100000.0)
-    default_nobid_error = models.FloatField("Default no-bid error", default=100000.0)
-    grade_scale_max = models.FloatField("Grade scale maximum", default=100.0)
-    grade_scale_min = models.FloatField("Grade scale minimum", default=20.0)
+    #initial_wealth = models.FloatField("Initial user wealth.", default=100000.0)
+    #lone_bidder_profit = models.FloatField("Default lone bidder profit", default=100000.0)
+    #default_nobid_error = models.FloatField("Default no-bid error", default=100000.0)
+    #grade_scale_max = models.FloatField("Grade scale maximum", default=100.0)
+    #grade_scale_min = models.FloatField("Grade scale minimum", default=20.0)
     correct_tolerance = models.FloatField("Tolerance for correct answer, percent", default=1.0)
     
     @models.permalink
@@ -49,12 +49,12 @@ class World(models.Model):
 class PeriodSummary(models.Model):
     user = models.ForeignKey(User)
     period = models.ForeignKey('Period')
-    wealth_created = models.FloatField()
-    auctions_won = models.IntegerField(default=0)
+    #wealth_created = models.FloatField()
+    #auctions_won = models.IntegerField(default=0)
     bids_placed = models.IntegerField(default=0)
-    mean_absolute_error = models.FloatField()
-    grade_wealth = models.FloatField(null=True, blank=True)
-    grade_error = models.FloatField(null=True, blank=True)
+    #mean_absolute_error = models.FloatField()
+    #grade_wealth = models.FloatField(null=True, blank=True)
+    #grade_error = models.FloatField(null=True, blank=True)
     correct_count = models.IntegerField(null=True, blank=True)
         
     def __unicode__(self):
@@ -94,10 +94,8 @@ class Period(models.Model):
         
         These objects get created once the period is over, and contain some
         summary statistics, namely:
-        - wealth created
-        - auctions won
         - bids placed
-        - mean absolute error
+        - correct count
         
         Currently we call this every time a user views profile, or period 
         detail, so it's generated if it doesn't exist, otherwise does nothing.
@@ -114,88 +112,34 @@ class Period(models.Model):
             self.summary_completed = True #set the flag right away, so that we don't attempt to do this again.
             self.save()
             membership_list = self.world.membership_set.all()
-            
-            # recalc auctions, if required
-            if recalc_auctions:
-                for asset in self.asset_set.all():
-                    asset.auction.calc_result(force=recalc_auctions)
-                
+                            
             for membership in membership_list:
                 if membership.is_master:
                     continue # world masters don't get results
                 if not membership.approved:
                     continue # unapproved members don't get results, either
-                auctions_won = 0
-                wealth_created = 0
-                error_list = []
                 correct_count = 0
-                for asset in self.asset_set.all():
-                    try:
-                        asset.auction.winning_bid_set.get(bidder__id = membership.user.user.id)
-                        num_winners = asset.auction.winning_bid_set.count()
-                        wealth_created = wealth_created - asset.auction.final_price/num_winners + asset.true_value/num_winners
-                        auctions_won = auctions_won + 1
-                    except ObjectDoesNotExist:
-                        pass # didn't win this auction.
-                        
+                for asset in self.asset_set.all():                        
                     try:
                         bid = asset.auction.bid_set.get(bidder__id = membership.user.user.id)
-                        error_list.append(abs(bid.amount - asset.true_value))
                         correct_flag = (abs(bid.amount - asset.true_value) < abs(self.world.correct_tolerance / 100.0 * asset.true_value))
                         correct_count += int(correct_flag)
                     except ObjectDoesNotExist:
-                        error_list.append(self.world.default_nobid_error)
+                        pass
                 
                 bids_placed = Bid.objects.filter(bidder = membership.user.user, auction__asset__period = self).count()
                 
-                mean_absolute_error = sum(error_list) / float(len(error_list))
-                
                 try:
                     ps = self.periodsummary_set.get(user = membership.user.user)
-                    ps.wealth_created = wealth_created
-                    ps.auctions_won = auctions_won
                     ps.bids_placed = bids_placed
-                    ps.mean_absolute_error = mean_absolute_error
                     ps.correct_count = correct_count
                     ps.save()
                 except ObjectDoesNotExist:
                     ps = PeriodSummary(user = membership.user.user, 
                             period = self, 
-                            wealth_created = wealth_created, 
-                            auctions_won = auctions_won, 
                             bids_placed = bids_placed, 
-                            mean_absolute_error = mean_absolute_error,
                             correct_count = correct_count)
                     ps.save()
-                
-                user_period_results = PeriodSummary.objects.filter(user=membership.user.user, period__world = self.world).values_list('wealth_created', flat=True)
-                membership.wealth = self.world.initial_wealth + sum(user_period_results)
-                membership.save()
-            
-            # now, let's calculate some grades.
-            #user_list = membership_list.values_list('user__user__id', flat=True)
-            #master_list = self.world.mastered_worlds.values_list('user__id', flat=True)
-            #peon_list = list(set(user_list) - set(master_list))
-            period_result_list = self.periodsummary_set.all().order_by('user__id')
-            
-            if period_result_list.count() > 1:
-                stats = period_result_list.aggregate(models.Max('wealth_created'), 
-                        models.Min('wealth_created'),
-                        models.Max('mean_absolute_error'),
-                        models.Min('mean_absolute_error'))
-                for ps in period_result_list:
-                    try:
-                        ps.grade_wealth = self.world.grade_scale_max - (stats['wealth_created__max'] - ps.wealth_created)/(stats['wealth_created__max'] - stats['wealth_created__min']) * (self.world.grade_scale_max - self.world.grade_scale_min)
-                    except ZeroDivisionError:
-                        ps.grade_wealth = self.world.grade_scale_max
-                    try:
-                        ps.grade_error = self.world.grade_scale_max - (ps.mean_absolute_error - stats['mean_absolute_error__min'])/(stats['mean_absolute_error__max'] - stats['mean_absolute_error__min']) * (self.world.grade_scale_max - self.world.grade_scale_min)
-                    except ZeroDivisionError:
-                        ps.grade_error = self.world.grade_scale_max
-                    ps.save()
-            else:
-                pass # not enough members to calculate grade.
-                
             
             return ''
         else:
@@ -215,8 +159,8 @@ class Asset(models.Model):
     
 class Auction(models.Model):
     asset = models.OneToOneField(Asset)
-    final_price = models.FloatField(null=True, blank=True)
-    result_completed = models.BooleanField(default=False)
+    #final_price = models.FloatField(null=True, blank=True)
+    #result_completed = models.BooleanField(default=False)
     
     @models.permalink
     def get_absolute_url(self):
@@ -237,59 +181,7 @@ class Auction(models.Model):
             return user_bid
         except ObjectDoesNotExist:
             return False
-        
-    def calc_result(self, force=False):
-        '''Process the auction result.
-        
-        A 'winning bid' is a bid which is either highest or tied for highest.
-        Set the winner_of property of all winning bids to the auction itself.
-        
-        Also set the final price of the auction according to the standard
-        second-price sealed bid auction rule.
-        
-        Currently, this is called whenever the user views an auction, and also
-        by the Period.calc_period_summary method, when that one is called.
-        '''
-        if (not self.result_completed or force) and (self.is_ended()):
-            self.result_completed = True #set the flag right away, so that we don't attempt to do this again.
-            self.save()
-            sorted_bids = self.bid_set.order_by('-amount')
             
-            for bid in sorted_bids:
-                bid.winner_of = None
-                bid.save()
-            
-            if sorted_bids.count() >= 2:
-                if sorted_bids[0].amount > sorted_bids[1].amount:
-                    # we have one winner, simple.
-                    #print self, 'more than 2 bids, one winner'
-                    bid = sorted_bids[0]
-                    bid.winner_of = self
-                    bid.save()
-                    self.final_price = sorted_bids[1].amount
-                else:
-                    #print self, 'more than 2 bids, more than one winner'
-                    winning_bids = sorted_bids.filter(amount = sorted_bids[0].amount)
-                    for bid in winning_bids:
-                        bid.winner_of = self
-                        bid.save()
-                    self.final_price = sorted_bids[0].amount
-                self.save()
-            elif sorted_bids.count() == 1:
-                #print self, 'one bid, one winner'
-                bid = sorted_bids[0]
-                bid.winner_of = self
-                bid.save()
-                self.final_price = sorted_bids[0].amount - self.asset.period.world.lone_bidder_profit
-                self.save()
-            else:
-                #print self, 'no bids, no winners'
-                pass # no bids, no winners
-            
-            return ''
-        else:
-            return ''
-    
     def __unicode__(self):
         return u'%s: %s: %s: %s' % (self.asset.period.world.name, self.asset.period.name, self.asset.name, self.final_price)
 
@@ -307,7 +199,7 @@ class UserProfile(models.Model):
 class Membership(models.Model):
     user = models.ForeignKey(UserProfile)
     world = models.ForeignKey(World)
-    wealth = models.FloatField()
+    #wealth = models.FloatField()
     approved = models.BooleanField(default=False)
     is_master = models.BooleanField(default=False)
         
@@ -316,7 +208,7 @@ class Membership(models.Model):
 
 class Bid(models.Model):
     auction = models.ForeignKey(Auction)
-    winner_of = models.ForeignKey(Auction, related_name='winning_bid_set', null=True, blank=True)
+    #winner_of = models.ForeignKey(Auction, related_name='winning_bid_set', null=True, blank=True)
     bidder = models.ForeignKey(User)
     amount = models.FloatField()
     time = models.DateTimeField('Bid Time')

@@ -76,7 +76,7 @@ class UserProfileAdmin(admin.ModelAdmin):
     get_last_name.short_description = "Last Name"
     
 class MembershipAdmin(admin.ModelAdmin):
-    list_display = ('get_username', 'get_first_name', 'get_last_name', 'get_world', 'wealth', 'approved', )
+    list_display = ('get_username', 'get_first_name', 'get_last_name', 'get_world', 'approved', )
     search_fields = ('user__username', 'world__name', )
     list_filter = ('approved', )
     
@@ -111,7 +111,7 @@ class AssetAdmin(admin.ModelAdmin):
 
 class AuctionAdmin(admin.ModelAdmin):
     inlines = [BidInline1, BidInline2,]
-    list_display = ('get_asset_name', 'final_price', 'get_world', 'get_period')
+    list_display = ('get_asset_name', 'get_world', 'get_period')
     search_fields = ('asset__name', 'asset__period__name', 'asset__period__world__name')
     
     def get_asset_name(self, obj):
@@ -148,7 +148,7 @@ class BidAdmin(admin.ModelAdmin):
     get_period.short_description = "Period"
 
 class PeriodSummaryAdmin(admin.ModelAdmin):
-    list_display = ('get_username', 'get_world', 'get_period', 'wealth_created')
+    list_display = ('get_username', 'get_world', 'get_period', 'correct_count')
     search_fields = ('user__username', 'period__name', 'period__world__name')
     
     def get_username(self, obj):
