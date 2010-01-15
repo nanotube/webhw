@@ -38,14 +38,9 @@ Results for Period {{ period.number }} of World: {{ world.name }}
         {% block first_last_header %}
         {% endblock first_last_header %}
         <th>Bids placed</th>
-        <th>Auctions won</th>
-        <th>Wealth created</th>
-        <th>Mean absolute error</th>
-        {% block grade_header %}
-            <th>Grade on Wealth</th>
-            <th>Grade on Error</th>
-        {% endblock grade_header %}
         <th>Number correct</th>
+        {% block grade_header %}
+        {% endblock grade_header %}
     </tr>
     {% for result in period_result_list %}
         <tr class="{% cycle 'even' 'odd' %}">
@@ -61,22 +56,15 @@ Results for Period {{ period.number }} of World: {{ world.name }}
             {% block first_last_display %}
             {% endblock first_last_display %}
             <td>{{ result.bids_placed }}</td>
-            <td>{{ result.auctions_won }}</td>
-            <td>{{ result.wealth_created|floatformat:2 }}</td>
-            <td>{{ result.mean_absolute_error|floatformat:2 }}</td>
-            {% block grade_body %}
-                <td>{{ result.grade_wealth|floatformat:4 }}</td>
-                <td>{{ result.grade_error|floatformat:4 }}</td>
-            {% endblock grade_body %}
             <td>{{ result.correct_count }}</td>
+            {% block grade_body %}
+            {% endblock grade_body %}
         </tr>
     {% endfor %}
 </table>
 <p>
     <ul class="notes">
         <li>Names of users other than you are hidden.</li>
-        <li>Default error for auctions you didn't bid on is {{ world.default_nobid_error|floatformat:2 }}.</li>
-        <li>Results are linearly rescaled onto the grade range of {{ world.grade_scale_min }}-{{ world.grade_scale_max }}.</li>
         <li>An answer is considered correct if it is within {{ world.correct_tolerance }} percent of true value, to allow for rounding errors.</li>
     </ul>
 </p>
