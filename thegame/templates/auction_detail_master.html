@@ -58,16 +58,6 @@ Auction for Asset {{ auction.asset.name }}
 
 {% endblock edit_element_form %}
 
-{% block bidder_display %}
-    <ol>
-    {% for winning_bid in auction.winning_bid_set.all %}
-        <li>{{ winning_bid.bidder.username }}: {{ winning_bid.bidder.last_name }}, {{ winning_bid.bidder.first_name }}</li>
-    {% empty %}
-        <li>[no winners]</li>
-    {% endfor %}
-    </ol>
-{% endblock bidder_display %}
-
 {% block true_value %}
     <tr>
         <th>Asset True Value:</th>

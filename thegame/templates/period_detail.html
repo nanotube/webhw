@@ -46,9 +46,6 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
         <th>Bids</th>
         <th>Your bid</th>
         <th>Auction Status</th>
-        {% if period.is_ended %}
-            <th>High Bidder</th>
-        {% endif %}
         <th>Auction End Time</th>
         {% block true_value_title %}
             {% if period.is_ended %}
@@ -74,36 +71,11 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
             </td>
             <td style="text-align: left;">
                 {% if asset.auction.is_ended %}
-                    Ended: 
-                    {% ifequal asset.auction.bid_set.count 0 %}
-                        Not sold
-                    {% else %}
-                        Sold for: {{ asset.auction.final_price|floatformat:2 }}
-                    {% endifequal %}
+                    Ended
                 {% else %}
                     In progress
                 {% endif %}
             </td>
-            {% if period.is_ended %}
-            <td style="text-align: left;">
-                {% block high_bidder_display %}
-                    {% expr asset.auction.did_user_bid(user) as user_bid %}
-                    {% if user_bid.winner_of %}
-                        {% ifequal asset.auction.winning_bid_set.count 1 %}
-                            <span class="winner">{{ user.username }}</span>
-                        {% else %}
-                            <span class="winner">{{ user.username }}</span> along with {{ asset.auction.winning_bid_set.count|full_subtract:1|floatformat:0 }} other participants.
-                        {% endifequal %}
-                    {% else %}
-                        {% ifequal asset.auction.bid_set.count 0 %}
-                            No bids
-                        {% else %}
-                            <span class="loser">Not You!</span>
-                        {% endifequal %}
-                    {% endif %}
-                {% endblock high_bidder_display %}
-            </td>
-            {% endif %}
             <td style="text-align: left;">{{ asset.auction.get_end_time|timeuntil }} ({{ asset.auction.get_end_time }})</td>
             {% block true_value %}
                 {% if period.is_ended %}

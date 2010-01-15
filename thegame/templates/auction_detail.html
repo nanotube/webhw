@@ -57,24 +57,6 @@ Auction for Asset {{ auction.asset.name }}
             {% endif %}
         </td>
     </tr>
-    {% if auction.is_ended %}
-    <tr>
-        <th>Auction winner:</th>
-        <td>
-            {% block bidder_display %}
-                {% if user_bid.winner_of %}
-                    {% ifequal auction.winning_bid_set.count 1 %}
-                        <span class="winner">{{ user.username }}</span>
-                    {% else %}
-                        <span class="winner">{{ user.username }}</span> along with {{ auction.winning_bid_set.count|full_subtract:1|floatformat:0 }} other participants.
-                    {% endifequal %}
-                {% else %}
-                    <span class="loser">Not You!</span>
-                {% endif %}
-            {% endblock bidder_display %}
-        </td>
-    </tr>
-    {% endif %}
     <tr>
         {% if not auction.is_ended %}
             <th>Your maximum bid:<br>
@@ -86,13 +68,9 @@ Auction for Asset {{ auction.asset.name }}
                 </form>
             </td>
         {% else %}
-            <th>Final price:</th>
+            <th>Status:</th>
             <td>
-                {% ifequal auction.bid_set.count 0 %}
-                    Not sold
-                {% else %}
-                    {{ auction.final_price|floatformat:2 }}
-                {% endifequal %}
+                Auction ended.
             </td>
         {% endif %}
     </tr>
