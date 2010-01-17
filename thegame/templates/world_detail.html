@@ -36,8 +36,7 @@ Details on World: {{ world.name }}
         <th>Period</th>
         <th>Period status</th>
         <th>Number of assets</th>
-        <th>Auctions won</th>
-        <th>Wealth created</th>
+        <th>Number correct</th>
         {% block editperiodheading %}
         {% endblock editperiodheading %}
     </tr>
@@ -50,38 +49,24 @@ Details on World: {{ world.name }}
             <td>{{ period.get_period_status }}</td>
             <td>{{ period.asset_set.count }}</td>
             <td>
-            {% if period.is_ended and period.summary_completed %}
-                {% if not user_membership.is_master %}
-                    {% expr period.periodsummary_set.get(user = user).auctions_won %}
+                {% if period.is_ended and period.summary_completed %}
+                    {% if not user_membership.is_master %}
+                        {% expr period.periodsummary_set.get(user = user) as usersummary %}
+                        <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.correct_count }}</a>
+                    {% else %}
+                        <a href="{{ period.get_absolute_url }}period_results/">[results]</a>
+                    {% endif %}
                 {% else %}
-                    --
+                    Period not yet complete.
                 {% endif %}
-            {% else %}
-                Period not yet complete.
-            {% endif %}
-            <td>
-            {% if period.is_ended and period.summary_completed %}
-                {% if not user_membership.is_master %}
-                    {% expr period.periodsummary_set.get(user = user) as usersummary %}
-                    <a href="{{ period.get_absolute_url }}period_results/">{{ usersummary.wealth_created|floatformat:2 }}</a>
-                {% else %}
-                    <a href="{{ period.get_absolute_url }}period_results/">[results]</a>
-                {% endif %}
-            {% else %}
-                Period not yet complete.
-            {% endif %}
-            {% block editperiodlink %}
-            {% endblock editperiodlink %}
+                {% block editperiodlink %}
+                {% endblock editperiodlink %}
+            </td>
         </tr>
     {% endfor %}
 </table>
 
 <ul class="notes">
-    <li>
-        Your current wealth in this world: 
-        {% expr user.get_profile().membership_set.get(world=world).wealth as user_wealth %}
-        {{ user_wealth|floatformat:2 }}
-    </li>
     <li>Number of users in world: {{ world.membership_set.count }}</li>
     <li>Number of periods in world: {{ world.period_set.count }}</li>
 </ul>

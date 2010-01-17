@@ -64,14 +64,8 @@ User Profile
                 {% endfor %}
             </table>
             <ul class="notes">
-                <li>
-                    Your current wealth in this world: 
-                    {{ membership.wealth|floatformat:2 }}
-                </li>
                 <li>Number of users in world: {{ membership.world.membership_set.count }}</li>
                 <li>Number of periods in world: {{ membership.world.period_set.count }}</li>
-                <li>Default error in absence of bid: {{ membership.world.default_nobid_error }}</li>
-                <li>Default discount in absence of second bid: {{ membership.world.lone_bidder_profit }}</li>
             </ul>
         </td>
     </tr>
