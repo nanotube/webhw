@@ -29,11 +29,11 @@ class BidInline1(admin.StackedInline):
     fk_name = 'auction'
     extra=1
 
-class BidInline2(admin.StackedInline):
-    model=Bid
-    fk_name = 'winner_of'
-    verbose_name_plural = 'Winning Bids'
-    extra = 1
+#class BidInline2(admin.StackedInline):
+    #model=Bid
+    #fk_name = 'winner_of'
+    #verbose_name_plural = 'Winning Bids'
+    #extra = 1
     
 class PeriodSummaryInline(admin.StackedInline):
     model=PeriodSummary
@@ -110,7 +110,7 @@ class AssetAdmin(admin.ModelAdmin):
     get_period.short_description = "Period"
 
 class AuctionAdmin(admin.ModelAdmin):
-    inlines = [BidInline1, BidInline2,]
+    inlines = [BidInline1, ]#BidInline2,]
     list_display = ('get_asset_name', 'get_world', 'get_period')
     search_fields = ('asset__name', 'asset__period__name', 'asset__period__world__name')
     
