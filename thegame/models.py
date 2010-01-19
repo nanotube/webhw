@@ -58,7 +58,7 @@ class PeriodSummary(models.Model):
     correct_count = models.IntegerField(null=True, blank=True)
         
     def __unicode__(self):
-        return u'%s: %s: %s' % (self.user.username, self.period.number, self.wealth_created)
+        return u'%s: %s: %s' % (self.user.username, self.period.number, self.correct_count)
 
 class Period(models.Model):
     world = models.ForeignKey(World)
