@@ -36,7 +36,7 @@ Details on Period: {{ period.number }} of World: {{ world.name }} for user {{ ta
         <th>Auction End Time</th>
         <th>User bid</th>
         <th>True Value</th>
-        <th>Correctness</th>
+        <th>Correct</th>
         <th>Edit</th>
     </tr>
     {% for asset in period.asset_set.all %}
@@ -62,7 +62,14 @@ Details on Period: {{ period.number }} of World: {{ world.name }} for user {{ ta
                 {% endif %}
             </td>
             <td>{{ asset.true_value|floatformat:2 }}</td>
-            <td>placeholder</td>
+            <td>
+                {% if user_bid %}
+                    {% expr (abs(user_bid[0].amount - asset.true_value) < abs(world.correct_tolerance / 100.0 * asset.true_value)) as correct_flag %}
+                    {{ correct_flag }}
+                {% else %}
+                    --
+                {% endif %}
+            </td>
             <td>
                 <a href="{{ asset.auction.get_absolute_url }}master/" class="changelink">Edit</a>
             </td>
