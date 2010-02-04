@@ -3,18 +3,73 @@
 {% load filter_extras %}
 
 {% block title %}
-Details on Period: {{ period.number }} of World: {{ world.name }}
+Details on Period: {{ period.number }} of World: {{ world.name }} for user {{ target_user.username }}
 {% endblock %}
 
 {% block breadcrumbs %}
 <div class="breadcrumbs">
     <a href="/">Home</a> &rsaquo; 
     <a href="{{ world.get_absolute_url }}">World</a> &rsaquo; 
-    Period
+    <a href="{{ period.get_absolute_url}}">Period</a> &rsaquo; 
+    View User Bids
 </div>
 {% endblock breadcrumbs %}
 
 {% block content %}
 
-<h2>Details for User <span class="name">{{ user.username }}</span> in Period <span class="name">{{ period.number }}</span> of World <span class="name">{{ world.name }}</span></h2>
+<h2>Details for User <span class="name">{{ target_user.username }}</span> in Period <span class="name">{{ period.number }}</span> of World <span class="name">{{ world.name }}</span></h2>
 
+<h3>Period <span class="name">{{ period.number }}</span>: <span class="name">{{ period.name }}</span></h3>
+<p>Start time: {{ period.start_time }}</p>
+<p>End time: {{ period.end_time }}</p>
+<div style="border: 1px solid gray; background-color: #eeeeec; padding-left: 10px;">{% autoescape off %}{{ period.description }}{% endautoescape %}</div>
+
+<h3>Period <span class="name">{{ period.number }}</span> Assets</h2>
+
+<table class="site">
+    <tr>
+        <th>#</th>
+        <th>Asset Name</th>
+        <th>Asset description</th>
+        <th>Bids</th>
+        <th>Auction Status</th>
+        <th>Auction End Time</th>
+        <th>User bid</th>
+        <th>True Value</th>
+        <th>Correctness</th>
+        <th>Edit</th>
+    </tr>
+    {% for asset in period.asset_set.all %}
+        <tr class="{% cycle 'even' 'odd' %}">
+            <td>{{ forloop.counter }}</td>
+            <td><a href="{{ asset.auction.get_absolute_url }}">{{ asset.name }}</a></td>
+            <td style="text-align: left;">{% autoescape off %}{{ asset.description }}{% endautoescape %}</td>
+            <td style="text-align: left;"><a href="{{ asset.auction.get_absolute_url }}bid_history/">{{ asset.auction.bid_set.count }} bids</a></td>
+            <td style="text-align: left;">
+                {% if asset.auction.is_ended %}
+                    Ended
+                {% else %}
+                    In progress
+                {% endif %}
+            </td>
+            <td style="text-align: left;">{{ asset.auction.get_end_time|timeuntil }} ({{ asset.auction.get_end_time }})</td>
+            <td>
+                {% expr asset.auction.bid_set.filter(bidder=target_user) as user_bid %}
+                {% if user_bid %}
+                    {{ user_bid.0.amount|floatformat:2 }}
+                {% else %}
+                    --
+                {% endif %}
+            </td>
+            <td>{{ asset.true_value|floatformat:2 }}</td>
+            <td>placeholder</td>
+            <td>
+                <a href="{{ asset.auction.get_absolute_url }}master/" class="changelink">Edit</a>
+            </td>
+        </tr>
+    {% endfor %}
+</table>
+
+<p><a href="/thegame/userprofile/">[back to user home]</a></p>
+
+{% endblock content %}

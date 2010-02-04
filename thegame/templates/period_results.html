@@ -39,8 +39,8 @@ Results for Period {{ period.number }} of World: {{ world.name }}
         {% endblock first_last_header %}
         <th>Bids placed</th>
         <th>Number correct</th>
-        {% block grade_header %}
-        {% endblock grade_header %}
+        {% block user_detail_header %}
+        {% endblock user_detail_header %}
     </tr>
     {% for result in period_result_list %}
         <tr class="{% cycle 'even' 'odd' %}">
@@ -57,8 +57,8 @@ Results for Period {{ period.number }} of World: {{ world.name }}
             {% endblock first_last_display %}
             <td>{{ result.bids_placed }}</td>
             <td>{{ result.correct_count }}</td>
-            {% block grade_body %}
-            {% endblock grade_body %}
+            {% block user_detail_body %}
+            {% endblock user_detail_body %}
         </tr>
     {% endfor %}
 </table>

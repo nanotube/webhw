@@ -29,5 +29,6 @@ urlpatterns = patterns('financegame.thegame.views',
     (r'^auctions/(?P<auction_id>\d+)/master/$', 'auction_detail_master'), # master an asset/auction
     (r'^auctions/(?P<auction_id>\d+)/bid_history/master/$', 'bid_history_master'), # master bid history
     
+    (r'^viewuser/(?P<world_id>\d+)/(?P<period_id>\d+)/(?P<target_user_id>\d+)/$', 'user_period_detail'), # view a user's bids
 
 )

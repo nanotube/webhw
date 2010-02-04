@@ -468,3 +468,23 @@ def period_results_master(request, world_id, period_id):
     
     period_result_list = period.periodsummary_set.all().order_by('-correct_count')
     return render_to_response('period_results_master.html', {'period':period, 'world':world, 'user_membership':user_membership, 'period_result_list':period_result_list, 'form':form}, context_instance=RequestContext(request))
+
+@login_required
+def user_period_detail(request, world_id, period_id, target_user_id):
+    # period attributes edit form, prefilled
+    # list asset-auctions, with edit/delete links, create new button
+    period = get_object_or_404(Period, pk=period_id)
+    world = get_object_or_404(World, pk=world_id)
+    target_user = get_object_or_404(User, pk=target_user_id)
+    
+    user_membership = world.user_is_member(request.user)
+    if not user_membership:
+        request.user.message_set.create(message = "Access denied. Either you are not a member of the world requested, or your membership has not yet been approved.")
+        return redirect_to(request, url ='/thegame/userprofile/')
+    
+    if not user_membership.is_master:
+        request.user.message_set.create(message = 'You are not authorized to edit this world.')
+        return HttpResponseRedirect(period.get_absolute_url())
+    
+    return render_to_response('user_period_detail.html', {'period':period, 'world':world, 'user_membership':user_membership, 'target_user':target_user}, context_instance=RequestContext(request))
+    

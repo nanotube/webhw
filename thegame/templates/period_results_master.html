@@ -68,3 +68,10 @@ Results for Period {{ period.number }} of World: {{ world.name }}
     {{ result.user.username }}
 {% endblock user_display %}
 
+{% block user_detail_header %}
+<th>View User Bids</th>
+{% endblock user_detail_header %}
+
+{% block user_detail_body %}
+<td><a href="/thegame/viewuser/{{ world.id }}/{{ period.id }}/{{ result.user.id }}/" class="detail">View bids</a></td>
+{% endblock user_detail_body %}
