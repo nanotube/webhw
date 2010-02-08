@@ -381,7 +381,10 @@ def period_detail_master(request, world_id, period_id):
     else:
         period_form = PeriodForm(instance = period, queryset = q)
     
-    return render_to_response('period_detail_master.html', {'period':period, 'world':world, 'user_membership':user_membership, 'period_form':period_form}, context_instance=RequestContext(request))
+    membership_queryset = Membership.objects.filter(world = world).order_by('user__user__username')
+    period_bids = Bid.objects.filter(auction__asset__period=period)
+    
+    return render_to_response('period_detail_master.html', {'period':period, 'world':world, 'user_membership':user_membership, 'period_form':period_form, 'world_members':membership_queryset, 'period_bids':period_bids}, context_instance=RequestContext(request))
 
 @login_required
 def auction_detail_master(request, auction_id):

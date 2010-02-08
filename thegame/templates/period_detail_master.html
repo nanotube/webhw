@@ -1,4 +1,5 @@
 {% extends "period_detail.html" %}
+{% load tag_extras %}
 
 {% block title %}
 Details on Period: {{ period.number }} of World: {{ world.name }}
@@ -32,6 +33,7 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
 {% block edit_element_form %}
 
 <div id="master_content">
+
 <div class="expand">
 <a href="#" onclick="Effect.toggle('edit_element_form_1', 'blind', {duration: 0.5}); return false;" class="expand">Edit this period</a>
 </div>
@@ -50,6 +52,51 @@ Details on Period: {{ period.number }} of World: {{ world.name }}
     <br>
     <a href="#" onclick="Effect.toggle('edit_element_form_1', 'blind', {duration: 0.5}); return false;" class="collapse">Hide form</a>
 </div>
+
+<div class="expand">
+<a href="#" onclick="Effect.toggle('edit_element_form_3', 'blind', {duration: 0.5}); return false;" class="expand">View user bids</a>
+</div>
+<div class="edit_element_form" id="edit_element_form_3">
+    <table class="edit_items">
+        <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Approved</th>
+            <th>Master</th>
+            <th>Bids in Period</th>
+        </tr>
+    {% for membership in world_members %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+                {{ membership.user.user.username }}
+            </td>
+            <td>
+                {{ membership.user.user.first_name }}
+            </td>
+            <td>
+                {{ membership.user.user.last_name }}
+            </td>
+            <td>
+                {{ membership.approved }}
+            </td>
+            <td>
+                {{ membership.is_master }}
+            </td>
+            <td style="text-align: right; padding-right: 5px;">
+                {% expr period_bids.filter(bidder=membership.user) as user_bids %}
+                <a href="/thegame/viewuser/{{ world.id }}/{{ period.id }}/{{ membership.user.user.id }}/">{{ user_bids.count }} bids</a>
+            </td>
+        </tr>
+    {% endfor %}
+    </table>
+
+    <br>
+    <a href="#" onclick="Effect.toggle('edit_element_form_3', 'blind', {duration: 0.5}); return false;" class="collapse">Hide section</a>
+</div>
+
 </div>
 
 {% endblock edit_element_form %}
